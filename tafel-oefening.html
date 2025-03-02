@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tafels Oefenen</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            color: #ff6b6b;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        h2 {
+            color: #4ecdc4;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        button {
+            background-color: #ff9a3c;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #ff7b00;
+            transform: scale(1.05);
+        }
+
+        button.selected {
+            background-color: #43aa8b;
+            transform: scale(1.05);
+        }
+
+        .question {
+            font-size: 2.5rem;
+            margin: 20px 0;
+            color: #ff6b6b;
+        }
+
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .option {
+            background-color: #4ecdc4;
+            font-size: 1.8rem;
+            padding: 10px 25px;
+            border-radius: 10px;
+            transition: transform 0.2s, filter 0.3s;
+        }
+
+        .option:hover {
+            transform: scale(1.1);
+            filter: brightness(1.2);
+        }
+
+        .screen-section {
+            margin: 20px 0;
+            display: none;
+        }
+
+        #gameScreen {
+            position: relative;
+        }
+
+        .score-display {
+            font-size: 1.5rem;
+            margin: 10px 0;
+            color: #ff6b6b;
+        }
+
+        .high-score {
+            font-size: 1.2rem;
+            margin: 10px 0;
+            color: #43aa8b;
+        }
+
+        .progress-bar {
+            height: 20px;
+            width: 100%;
+            background-color: #eee;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: #ff9a3c;
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        .emoji {
+            font-size: 2rem;
+            margin: 10px 0;
+        }
+
+        .timer {
+            font-size: 1.2rem;
+            color: #ff6b6b;
+            margin: 10px 0;
+        }
+
+        .result-message {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s, transform 0.5s;
+        }
+
+        .result-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .correct {
+            color: #43aa8b;
+        }
+
+        .wrong {
+            color: #ff6b6b;
+        }
+
+        .highscore-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .highscore-table th, .highscore-table td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .highscore-table th {
+            background-color: #f0f8ff;
+            color: #333;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .question {
+                font-size: 2rem;
+            }
+
+            .option {
+                font-size: 1.5rem;
+                padding: 8px 20px;
+            }
+        }
+
+        /* Result screen styles */
+        .result-emoji {
+            font-size: 4rem;
+            margin: 10px 0;
+        }
+
+        .result-details {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .score-item:last-child {
+            border-bottom: none;
+        }
+
+        .score-label {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .score-value {
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .total-score {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 2px solid #dee2e6;
+            font-size: 1.2rem;
+        }
+
+        .total-score .score-value {
+            color: #007bff;
+            font-weight: 700;
+        }
+
+        #playAgainButton {
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+        }
+
+        /* Format for the time display */
+        #timer, #finalTime {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+        }
+
+        /* Sterren stijlen */
+        .stars-container {
+            margin: 10px 0;
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .star {
+            font-size: 2rem;
+            color: #ccc;
+            transition: color 0.3s, transform 0.5s;
+        }
+
+        .star.earned {
+            color: gold;
+            animation: starPulse 0.5s ease-in-out;
+        }
+
+        @keyframes starPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        /* Confetti stijlen */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+            z-index: 100;
+        }
+
+        /* Streak counter */
+        .streak-counter {
+            font-size: 1rem;
+            color: #ff9a3c;
+            margin: 5px 0;
+            font-weight: bold;
+        }
+
+        /* Animatie voor correcte antwoorden */
+        @keyframes correctAnswer {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .animate-correct {
+            animation: correctAnswer 0.5s ease-in-out;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .menu-button {
+            background-color: #4ecdc4;
+        }
+
+        .menu-button:hover {
+            background-color: #3db5ae;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="selectionScreen" class="screen-section" style="display: block;">
+            <h1>Tafels Oefenen</h1>
+
+            <h2>Welke tafels wil je oefenen?</h2>
+            <div id="tafelButtons">
+                <button class="tafel-btn" data-tafel="1">Tafel van 1</button>
+                <button class="tafel-btn" data-tafel="2">Tafel van 2</button>
+                <button class="tafel-btn" data-tafel="3">Tafel van 3</button>
+                <button class="tafel-btn" data-tafel="4">Tafel van 4</button>
+                <button class="tafel-btn" data-tafel="5">Tafel van 5</button>
+                <button class="tafel-btn" data-tafel="6">Tafel van 6</button>
+                <button class="tafel-btn" data-tafel="7">Tafel van 7</button>
+                <button class="tafel-btn" data-tafel="8">Tafel van 8</button>
+                <button class="tafel-btn" data-tafel="9">Tafel van 9</button>
+                <button class="tafel-btn" data-tafel="10">Tafel van 10</button>
+            </div>
+            <h2>Hoeveel vragen wil je beantwoorden?</h2>
+            <div id="questionCountButtons">
+                <button class="question-count-btn" data-count="5">5 vragen</button>
+                <button class="question-count-btn" data-count="10">10 vragen</button>
+                <button class="question-count-btn" data-count="15">15 vragen</button>
+                <button class="question-count-btn" data-count="20">20 vragen</button>
+            </div>
+            <div>
+                <button id="startButton" disabled>Start!</button>
+            </div>
+            <div class="high-score">
+                <h3>Highscores</h3>
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">Score = % goed × tijdbonus</p>
+                <table class="highscore-table">
+                    <thead>
+                        <tr>
+                            <th>Datum</th>
+                            <th>Tafels</th>
+                            <th>Score</th>
+                            <th>Tijd</th>
+                        </tr>
+                    </thead>
+                    <tbody id="highscoreTable">
+                        <!-- Highscores will be added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="gameScreen" class="screen-section">
+            <div class="score-display">
+                Score: <span id="currentScore">0</span> / <span id="totalQuestions">0</span>
+            </div>
+            <div class="stars-container" id="starsContainer">
+                <!-- Sterren worden hier dynamisch toegevoegd -->
+            </div>
+            <div class="streak-counter" id="streakCounter">Reeks: 0</div>
+            <div class="progress-bar">
+                <div class="progress" id="progressBar"></div>
+            </div>
+            <div class="timer" id="timer">Tijd: 0 seconden</div>
+            <div class="question" id="question"></div>
+            <div class="options" id="options"></div>
+            <div class="result-message" id="resultMessage"></div>
+            <div class="emoji" id="emoji"></div>
+        </div>
+
+        <div id="resultScreen" class="screen-section">
+            <h2>Resultaat</h2>
+            <div id="resultEmoji" class="result-emoji">😃</div>
+            <div class="result-details">
+                <div class="score-item">
+                    <span class="score-label">Score:</span>
+                    <span id="finalScore" class="score-value">0/0</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">Percentage:</span>
+                    <span id="percentageScore" class="score-value">0%</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">Tijd:</span>
+                    <span id="finalTime" class="score-value">0:00</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">Tijdbonus:</span>
+                    <span id="timeBonus" class="score-value">-</span>
+                </div>
+                <div class="score-item total-score">
+                    <span class="score-label">Totaalscore:</span>
+                    <span id="combinedScore" class="score-value">0</span>
+                </div>
+            </div>
+            <div class="button-group">
+                <button id="playAgainButton" class="button">Nog een keer!</button>
+                <button id="menuButton" class="button menu-button">Terug naar menu</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="correctSound" src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAFAAAGUACFhYWFhYWFhYWFhYWFhYWFhYWFvb29vb29vb29vb29vb29vb29vb3t7e3t7e3t7e3t7e3t7e3t7e3t7f////////////////////////////////8AAAA8TEFNRTMuMTAwAZUAAAAALAAAACQAACXQgCQJAQAAAQAGUOV4xerAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xDEFIPAAAGkAAAAIAAANIAAAARVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7EMQpg8AAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sQxDSDwAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xDEXIPAAAGkAAAAIAAANIAAAAT////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////v/7EMR6g8AAAaQAAAAgAAA0gAAABP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7EMQAA8AAAaQAAAAgAAA0gAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQxAAAAAAAaQAAAAgAAA0gAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="></audio>
+    <audio id="wrongSound" src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU3LjU2LjEwMQAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADxgC9vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29//////////////////////////////////////////////////////////////////8AAAAATGF2YzU3LjY0AAAAAAAAAAAAAAAAJAUHAAAAAAAAAOweUHFQTQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7UMQAAAeEDUi0DMAolaIhhjGAAiaNBqlgI1LXm95POTQqVOnFaTu8Z+8lvlA5S7Jd0nR8AAgCGKBgYHAxEwlhQQDCwkwyYADAxgJgYTDwYKhKAEIYDCQYYg6GDQWhhULwIAgLC4cLBwcQwADoYKAqAEMIBhAKhgUDIYNAuGAwBBgUADVZfDQiTAgMAQwCKoAAaKiLYADMvyIrIwc5WjYlJzfLarGwIGQwMFArMDg2MBweMVE+MIALMAQeAQRQkAo0IAZMiS6MCQaMGQcBAPMExJMGw1MCQBMCQtMEgXAIDhcVRhChgUBxhSChgyDgVC4wBB8BAcMAQJEIEDAwRBYDmOaVRhOEZgOBpg+CgiIBhiAqGSWFLJkGQYRoWbRhQvJjGNhhQBpiEAJgGC4BAIuGBooAQYLKhp4UGAQSmA4Yg0ABimFCmYPgKYDgGXKLmGwOGAwCmAI0GEgfl6WmCQMGCIImCICGGgPmQsGEYLGAYBl3cGBIFmCACmBAIGCgGmAYdjAUAYGWZdwU4wJAEFgVIgPMEwMMAQBAgCRKDRgABhgUAL5r+tXZGCIDGAACmAgKGNsKDASAIMgUIgEMGQPeevV6jTEFNRTMuMTAwqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo="></audio>
+    <audio id="laserSound" src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAbAAAJXwAICgoMDhATExUYGhoeICMlJyksLi8yNDY4Oz0/QENGSEpNT1JUVlhbXV9iZGZpa21vcXR2eXt+gIOFiIqNj5KUl5mcnqClp6qsrrG0tri7vcDCxcfKzM7R09bY293g4uTn6evt8PP19/r8/v8AAAA8TEFNRTMuMTAwAZUAAAAALgkAABRAIAexhgAAgAAACV/2R5OeAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xDEFIPAAAGkAAAAIAAANIAAAARVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7EMQpg8AAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sQxDSDwAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xDEXIPAAAGkAAAAIAAANIAAAAT////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////v/7EMR6g8AAAaQAAAAgAAA0gAAABP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7EMQAA8AAAaQAAAAgAAA0gAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQRAAEAAABpAAAACAAANIAAAARMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7EEQIg8AAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sQRBUDwAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xBEIIPAAAGkAAAAIAAANIAAAAT////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////v/7EEQ4g8AAAaQAAAAgAAA0gAAABP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7EEQAA8AAAaQAAAAgAAA0gAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQRAAEAAABpAAAACAAANIAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></audio>
+    <audio id="highscoreSound" src="data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAABqAAAvSwAICgoNDRAQExMVFxgYGhwdHR8hIiQlJycoKiwsLjAxMzQ2Nzc5Ozw+P0FCQkVGR0lLTExOUFFTVVZYWFpcXV9gYmNlZmdpamxsbm9xc3R2d3l6e31+gIGDhIaHiYqMjI6PkZKUlZeYmJqdnp+ho6SlqKipq62usbKztbe4uLq8vb/AwsXGyMnLzM7P0dLU1dfa29ze4OHj5ebp6uvt7vDx8/T29/n6/P3+AAAA5TEFNRTMuMTAwBEgAAAAALgAANSAkJCYLgAAAQAAAL0ti3m8cAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQRAAEAAABpAAAACAAANIAAAARMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7EEQIg8AAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sQRBUDwAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xBEIIPAAAGkAAAAIAAANIAAAAT////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////v/7EEQ4g8AAAaQAAAAgAAA0gAAABP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7EEQAA8AAAaQAAAAgAAA0gAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQRAAEAAABpAAAACAAANIAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></audio>
+
+    <script>
+        // Initialization
+        let selectedTables = [];
+        let questionCount = 0;
+        let currentQuestion = 0;
+        let score = 0;
+        let startTime;
+        let timerInterval;
+        let highscores = JSON.parse(localStorage.getItem('tafelsHighscores')) || [];
+        let currentTafelSet = [];
+        let questions = [];
+        let audioInitialized = false;
+        let audioContext = null;
+        let currentStreak = 0;
+        let maxStreak = 0;
+
+        // Audio files
+        const audioFiles = {
+            correct: document.getElementById('correctSound'),
+            wrong: document.getElementById('wrongSound'),
+            laser: document.getElementById('laserSound'),
+            highscore: document.getElementById('highscoreSound')
+        };
+
+        // DOM Elements
+        const selectionScreen = document.getElementById('selectionScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const resultScreen = document.getElementById('resultScreen');
+        const tafelButtons = document.querySelectorAll('.tafel-btn');
+        const questionCountButtons = document.querySelectorAll('.question-count-btn');
+        const startButton = document.getElementById('startButton');
+        const questionElement = document.getElementById('question');
+        const optionsElement = document.getElementById('options');
+        const currentScoreElement = document.getElementById('currentScore');
+        const totalQuestionsElement = document.getElementById('totalQuestions');
+        const finalScoreElement = document.getElementById('finalScore');
+        const finalTotalQuestionsElement = document.getElementById('finalTotalQuestions');
+        const progressBar = document.getElementById('progressBar');
+        const timerElement = document.getElementById('timer');
+        const finalTimeElement = document.getElementById('finalTime');
+        const resultMessageElement = document.getElementById('resultMessage');
+        const emojiElement = document.getElementById('emoji');
+        const resultEmojiElement = document.getElementById('resultEmoji');
+        const highscoreMessageElement = document.getElementById('highscore-message');
+        const playAgainButton = document.getElementById('playAgainButton');
+        const highscoreTable = document.getElementById('highscoreTable');
+
+        // Preload all audio files
+        function preloadAudio() {
+            for (const key in audioFiles) {
+                audioFiles[key].load();
+            }
+        }
+
+        // Initialize audio on first user interaction
+        function initializeAudio() {
+            if (!audioInitialized) {
+                try {
+                    // Create audio context
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+                    // Preload all audio files
+                    preloadAudio();
+
+                    // Play a silent sound to unlock audio on iOS/Safari
+                    const silentSound = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    gainNode.gain.value = 0;
+                    silentSound.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    silentSound.start();
+                    silentSound.stop(audioContext.currentTime + 0.001);
+
+                    audioInitialized = true;
+                    console.log("Audio system initialized successfully");
+                } catch (error) {
+                    console.error("Error initializing audio system:", error);
+                }
+            }
+        }
+
+        // Initialize audio on any user interaction
+        document.body.addEventListener('click', initializeAudio, { once: true });
+
+        // Initialize highscore table
+        updateHighscoreTable();
+
+        // Event Listeners
+        tafelButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                button.classList.toggle('selected');
+                const tafel = parseInt(button.dataset.tafel);
+
+                if (button.classList.contains('selected')) {
+                    if (!selectedTables.includes(tafel)) {
+                        selectedTables.push(tafel);
+                    }
+                } else {
+                    const index = selectedTables.indexOf(tafel);
+                    if (index !== -1) {
+                        selectedTables.splice(index, 1);
+                    }
+                }
+
+                updateStartButtonState();
+            });
+        });
+
+        questionCountButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                questionCountButtons.forEach(btn => btn.classList.remove('selected'));
+                button.classList.add('selected');
+                questionCount = parseInt(button.dataset.count);
+                updateStartButtonState();
+            });
+        });
+
+        startButton.addEventListener('click', startGame);
+        playAgainButton.addEventListener('click', () => {
+            resultScreen.style.display = 'none';
+            // In plaats van terug naar het selectiescherm, direct opnieuw starten met dezelfde instellingen
+            startGame();
+        });
+
+        // Event listener voor de "Terug naar menu" knop
+        document.getElementById('menuButton').addEventListener('click', () => {
+            resultScreen.style.display = 'none';
+            selectionScreen.style.display = 'block';
+
+            // Reset de geselecteerde tafels en vraagaantal
+            tafelButtons.forEach(button => {
+                button.classList.remove('selected');
+            });
+            questionCountButtons.forEach(button => {
+                button.classList.remove('selected');
+            });
+            selectedTables = [];
+            questionCount = 0;
+
+            // Update de start knop status
+            updateStartButtonState();
+
+            // Update de highscore tabel bij terugkeer naar het menu
+            updateHighscoreTable();
+        });
+
+        // Functions
+        function updateStartButtonState() {
+            startButton.disabled = selectedTables.length === 0 || questionCount === 0;
+        }
+
+        function updateHighscoreTable() {
+            highscoreTable.innerHTML = '';
+
+            // Get highscores for the current table selection or all highscores if no selection
+            let allHighscores = [];
+
+            if (selectedTables.length === 0) {
+                // No tables selected, show all highscores from all table sets
+                const keys = Object.keys(localStorage).filter(key => key.startsWith('highscores-'));
+                keys.forEach(key => {
+                    const scores = JSON.parse(localStorage.getItem(key)) || [];
+                    scores.forEach(score => {
+                        allHighscores.push(score);
+                    });
+                });
+            } else {
+                // Tables selected, show only those highscores
+                const tableKey = selectedTables.sort().join('-');
+                allHighscores = JSON.parse(localStorage.getItem(`highscores-${tableKey}`)) || [];
+            }
+
+            // Ensure each highscore has a combinedScore
+            allHighscores = allHighscores.map(score => {
+                if (!score.combinedScore) {
+                    // Calculate percentage score
+                    const percentageScore = Math.round((score.score / score.totalQuestions) * 100);
+
+                    // Calculate average time per question
+                    const avgTimePerQuestion = score.time / score.totalQuestions;
+
+                    // Determine time bonus
+                    let timeBonus = 1.0;
+                    if (avgTimePerQuestion < 3) timeBonus = 1.5;
+                    else if (avgTimePerQuestion < 5) timeBonus = 1.3;
+                    else if (avgTimePerQuestion < 8) timeBonus = 1.1;
+
+                    // Calculate combined score
+                    score.combinedScore = Math.round(percentageScore * timeBonus);
+                }
+                return score;
+            });
+
+            // Sort by combined score (highest first)
+            allHighscores.sort((a, b) => b.combinedScore - a.combinedScore);
+
+            // Display top 5 scores
+            if (allHighscores.length === 0) {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 4;
+                cell.textContent = 'Nog geen highscores!';
+                cell.style.textAlign = 'center';
+                row.appendChild(cell);
+                highscoreTable.appendChild(row);
+            } else {
+                allHighscores.slice(0, 5).forEach(score => {
+                    const row = document.createElement('tr');
+
+                    // Date cell
+                    const dateCell = document.createElement('td');
+                    dateCell.textContent = score.date;
+                    row.appendChild(dateCell);
+
+                    // Tables cell
+                    const tablesCell = document.createElement('td');
+                    tablesCell.textContent = score.tables.split('-').join(', ');
+                    row.appendChild(tablesCell);
+
+                    // Score cell
+                    const scoreCell = document.createElement('td');
+                    const wrongAnswers = score.totalQuestions - score.score;
+                    scoreCell.innerHTML = `<strong>${score.combinedScore}</strong><br><span style="font-size: 0.8rem; color: #43aa8b;">${score.score} goed</span> / <span style="font-size: 0.8rem; color: #ff6b6b;">${wrongAnswers} fout</span>`;
+                    row.appendChild(scoreCell);
+
+                    // Time cell
+                    const timeCell = document.createElement('td');
+                    timeCell.textContent = formatTime(score.time);
+                    row.appendChild(timeCell);
+
+                    highscoreTable.appendChild(row);
+                });
+            }
+        }
+
+        function startGame() {
+            selectionScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+
+            currentQuestion = 0;
+            score = 0;
+            currentStreak = 0;
+            maxStreak = 0;
+
+            // Generate questions based on selected tables
+            generateQuestions();
+
+            // Update UI
+            totalQuestionsElement.textContent = questionCount;
+            currentScoreElement.textContent = score;
+
+            // Initialize stars
+            initializeStars();
+
+            // Update streak counter
+            document.getElementById('streakCounter').textContent = `Reeks: ${currentStreak}`;
+
+            // Start timer
+            startTime = new Date();
+            timerInterval = setInterval(updateTimer, 1000);
+
+            // Show first question
+            showQuestion();
+        }
+
+        function generateQuestions() {
+            questions = [];
+            currentTafelSet = [...selectedTables]; // Make a copy
+
+            for (let i = 0; i < questionCount; i++) {
+                const tafel = selectedTables[Math.floor(Math.random() * selectedTables.length)];
+                const number = Math.floor(Math.random() * 10) + 1;
+                const answer = tafel * number;
+
+                // Generate 3 wrong answers
+                let wrongAnswers = [];
+                while (wrongAnswers.length < 3) {
+                    // Generate random answers close to correct one
+                    let wrongAnswer;
+                    if (Math.random() < 0.5) {
+                        // Offset by small amount
+                        wrongAnswer = answer + (Math.floor(Math.random() * 5) + 1);
+                    } else {
+                        // Offset by small amount
+                        wrongAnswer = answer - (Math.floor(Math.random() * 5) + 1);
+                    }
+
+                    // Make sure wrong answer is positive and not the correct answer
+                    if (wrongAnswer > 0 && wrongAnswer !== answer && !wrongAnswers.includes(wrongAnswer)) {
+                        wrongAnswers.push(wrongAnswer);
+                    }
+                }
+
+                questions.push({
+                    tafel,
+                    number,
+                    answer,
+                    wrongAnswers
+                });
+            }
+        }
+
+        function showQuestion() {
+            if (currentQuestion >= questionCount) {
+                endGame();
+                return;
+            }
+
+            const question = questions[currentQuestion];
+
+            // Generate random colors for the numbers
+            const getRandomColor = () => {
+                const colors = [
+                    '#FF6B6B', // rood
+                    '#4ECDC4', // turquoise
+                    '#FF9A3C', // oranje
+                    '#43AA8B', // groen
+                    '#9B5DE5', // paars
+                    '#F15BB5', // roze
+                    '#00BBF9', // blauw
+                    '#00F5D4', // mint
+                    '#FEE440', // geel
+                    '#9B2226'  // donkerrood
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            };
+
+            // Add random emoji to the question
+            const emojis = ['🦄', '🌈', '🌟', '🦋', '🐱', '🐶', '🦁', '🐼', '🐰', '🦊', '🐻', '🐯'];
+            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+
+            // Create colorful question with each number in a different color
+            const firstNumberColor = getRandomColor();
+            const secondNumberColor = getRandomColor();
+            const multiplyColor = getRandomColor();
+            const equalsColor = getRandomColor();
+
+            questionElement.innerHTML = `${randomEmoji} <span style="color: ${firstNumberColor};">${question.number}</span> <span style="color: ${multiplyColor};">×</span> <span style="color: ${secondNumberColor};">${question.tafel}</span> <span style="color: ${equalsColor};">=</span> `;
+
+            // Clear previous options
+            optionsElement.innerHTML = '';
+
+            // Create answer options (1 correct, 3 wrong, in random order)
+            const allAnswers = [question.answer, ...question.wrongAnswers];
+
+            // Shuffle answers
+            for (let i = allAnswers.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allAnswers[i], allAnswers[j]] = [allAnswers[j], allAnswers[i]];
+            }
+
+            // Create buttons for each answer
+            allAnswers.forEach(answer => {
+                const button = document.createElement('button');
+                button.textContent = answer;
+                button.classList.add('option');
+
+                // Add a random background color to each answer option
+                const answerColor = getRandomColor();
+                button.style.backgroundColor = answerColor;
+
+                // Ensure text is always readable by using white text
+                button.style.color = 'white';
+
+                button.addEventListener('click', () => checkAnswer(answer));
+                optionsElement.appendChild(button);
+            });
+
+            // Update progress bar
+            const progressPercentage = (currentQuestion / questionCount) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+
+            // Hide previous result message
+            resultMessageElement.classList.remove('show');
+            emojiElement.textContent = '';
+        }
+
+        function checkAnswer(selectedAnswer) {
+            const question = questions[currentQuestion];
+            const isCorrect = selectedAnswer === question.answer;
+
+            if (isCorrect) {
+                score++;
+                currentStreak++;
+                maxStreak = Math.max(maxStreak, currentStreak);
+                playSound('correct');
+
+                // Animeer de vraag bij een goed antwoord
+                questionElement.classList.add('animate-correct');
+                setTimeout(() => {
+                    questionElement.classList.remove('animate-correct');
+                }, 500);
+
+                // Meer variatie in positieve berichten en emoji's
+                const goodMessages = [
+                    'Goed gedaan! 🎉',
+                    'Super! 🌟',
+                    'Helemaal goed! 👏',
+                    'Knap hoor! 🦄',
+                    'Fantastisch! 🌈'
+                ];
+                const randomMessage = goodMessages[Math.floor(Math.random() * goodMessages.length)];
+                resultMessageElement.textContent = randomMessage;
+                resultMessageElement.classList.remove('wrong');
+                resultMessageElement.classList.add('correct', 'show');
+
+                // Meer variatie in positieve emoji's
+                const happyEmojis = ['😃', '🤩', '😊', '🥳', '😎', '👍', '💪', '🦸‍♀️'];
+                emojiElement.textContent = happyEmojis[Math.floor(Math.random() * happyEmojis.length)];
+
+                // Als de streak een veelvoud van 5 is, toon een speciale boodschap
+                if (currentStreak > 0 && currentStreak % 5 === 0) {
+                    resultMessageElement.textContent = `SUPER REEKS: ${currentStreak} op rij! 🔥`;
+                }
+            } else {
+                currentStreak = 0;
+                playSound('wrong');
+                resultMessageElement.textContent = `Oeps! Het juiste antwoord is ${question.answer}`;
+                resultMessageElement.classList.remove('correct');
+                resultMessageElement.classList.add('wrong', 'show');
+
+                // Meer variatie in emoji's bij foute antwoorden
+                const tryAgainEmojis = ['😕', '🤔', '🙂', '💭', '📚', '✏️'];
+                emojiElement.textContent = tryAgainEmojis[Math.floor(Math.random() * tryAgainEmojis.length)];
+            }
+
+            // Update score en streak
+            currentScoreElement.textContent = score;
+            document.getElementById('streakCounter').textContent = `Reeks: ${currentStreak}`;
+
+            // Update sterren
+            updateStars();
+
+            // Move to next question after delay
+            setTimeout(() => {
+                currentQuestion++;
+                showQuestion();
+            }, 1500);
+        }
+
+        function updateTimer() {
+            const elapsedSeconds = Math.floor((new Date() - startTime) / 1000);
+            timerElement.textContent = `Tijd: ${elapsedSeconds} seconden`;
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+
+            // Calculate percentage score
+            const percentageScore = Math.round((score / questionCount) * 100);
+
+            // Calculate average time per question
+            const avgTimePerQuestion = elapsedTime / questionCount;
+
+            // Determine time bonus
+            let timeBonus = 1.0;
+            let timeBonusText = "";
+
+            if (avgTimePerQuestion < 3) {
+                timeBonus = 1.5;
+                timeBonusText = "Supersnel! (1.5×)";
+            } else if (avgTimePerQuestion < 5) {
+                timeBonus = 1.3;
+                timeBonusText = "Heel snel! (1.3×)";
+            } else if (avgTimePerQuestion < 8) {
+                timeBonus = 1.1;
+                timeBonusText = "Snel! (1.1×)";
+            } else {
+                timeBonusText = "Goed tempo (1.0×)";
+            }
+
+            // Calculate combined score
+            const combinedScore = Math.round(percentageScore * timeBonus);
+
+            // Update the result screen
+            document.getElementById('finalScore').textContent = `${score}/${questionCount}`;
+            document.getElementById('finalTime').textContent = formatTime(elapsedTime);
+            document.getElementById('percentageScore').textContent = `${percentageScore}%`;
+            document.getElementById('timeBonus').textContent = timeBonusText;
+            document.getElementById('combinedScore').textContent = `${combinedScore}`;
+
+            // Show appropriate emoji based on score
+            const resultEmoji = document.getElementById('resultEmoji');
+            if (percentageScore === 100) {
+                resultEmoji.textContent = '🏆';
+                // Toon confetti bij een perfecte score
+                createConfetti();
+            } else if (percentageScore >= 90) {
+                resultEmoji.textContent = '🌟';
+            } else if (percentageScore >= 80) {
+                resultEmoji.textContent = '😃';
+            } else if (percentageScore >= 70) {
+                resultEmoji.textContent = '🙂';
+            } else if (percentageScore >= 50) {
+                resultEmoji.textContent = '😐';
+            } else {
+                resultEmoji.textContent = '😢';
+            }
+
+            // Save highscore
+            const tableKey = selectedTables.sort().join('-');
+            let highscores = JSON.parse(localStorage.getItem(`highscores-${tableKey}`)) || [];
+
+            const newHighscore = {
+                date: new Date().toLocaleDateString(),
+                tables: tableKey,
+                score: score,
+                totalQuestions: questionCount,
+                time: elapsedTime,
+                combinedScore: combinedScore,
+                maxStreak: maxStreak
+            };
+
+            highscores.push(newHighscore);
+            localStorage.setItem(`highscores-${tableKey}`, JSON.stringify(highscores));
+
+            // Update highscore table
+            updateHighscoreTable();
+
+            // Play highscore sound
+            playSound('highscore');
+
+            // Show result screen
+            gameScreen.style.display = 'none';
+            resultScreen.style.display = 'flex';
+        }
+
+        function initializeStars() {
+            const starsContainer = document.getElementById('starsContainer');
+            starsContainer.innerHTML = '';
+
+            // Voeg 5 sterren toe (of een ander aantal afhankelijk van de moeilijkheidsgraad)
+            for (let i = 0; i < 5; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.innerHTML = '★';
+                star.id = `star-${i}`;
+                starsContainer.appendChild(star);
+            }
+        }
+
+        function updateStars() {
+            // Bereken hoeveel sterren verdiend zijn op basis van score percentage
+            const percentage = (score / currentQuestion) * 100;
+            const starsEarned = Math.floor(percentage / 20); // 5 sterren = 100%, 4 sterren = 80%, etc.
+
+            // Update sterren UI
+            for (let i = 0; i < 5; i++) {
+                const star = document.getElementById(`star-${i}`);
+                if (i < starsEarned) {
+                    if (!star.classList.contains('earned')) {
+                        star.classList.add('earned');
+                    }
+                } else {
+                    star.classList.remove('earned');
+                }
+            }
+        }
+
+        function createConfetti() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+
+            for (let i = 0; i < 100; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+
+                    // Willekeurige positie, kleur en grootte
+                    const size = Math.random() * 10 + 5;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+
+                    confetti.style.width = `${size}px`;
+                    confetti.style.height = `${size}px`;
+                    confetti.style.backgroundColor = color;
+                    confetti.style.left = `${Math.random() * 100}vw`;
+                    confetti.style.top = '-20px';
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    confetti.style.opacity = '1';
+
+                    document.body.appendChild(confetti);
+
+                    // Animeer het confetti
+                    const animationDuration = Math.random() * 3 + 2;
+                    confetti.style.transition = `top ${animationDuration}s linear, left ${animationDuration}s ease-in-out, opacity ${animationDuration}s linear`;
+
+                    setTimeout(() => {
+                        confetti.style.top = '100vh';
+                        confetti.style.left = `${Math.random() * 100}vw`;
+                        confetti.style.opacity = '0';
+
+                        // Verwijder het confetti element na de animatie
+                        setTimeout(() => {
+                            document.body.removeChild(confetti);
+                        }, animationDuration * 1000);
+                    }, 10);
+                }, i * 50);
+            }
+        }
+
+        // Helper functions
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        function playSound(type) {
+            if (audioFiles[type]) {
+                audioFiles[type].currentTime = 0;
+                audioFiles[type].play().catch(error => {
+                    console.error(`Error playing ${type} sound:`, error);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
