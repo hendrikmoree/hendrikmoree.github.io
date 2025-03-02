@@ -199,12 +199,30 @@
         }
 
         .delete-score-btn {
-            padding: 5px;
+            padding: 0;
             width: 24px;
             height: 24px;
-            font-size: 14px;
+            font-size: 16px;
             margin: 0;
             min-height: unset;
+            border-radius: 6px;
+            background-color: #ff6b6b;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            opacity: 0.8;
+        }
+
+        .delete-score-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+            background-color: #ff5252;
+        }
+
+        .delete-score-btn:active {
+            transform: scale(0.95);
         }
 
         @media (max-width: 480px) {
@@ -241,6 +259,12 @@
 
             h2 {
                 font-size: 1.2rem;
+            }
+
+            .delete-score-btn {
+                width: 20px;
+                height: 20px;
+                font-size: 14px;
             }
         }
 
