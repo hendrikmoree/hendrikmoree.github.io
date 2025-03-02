@@ -826,7 +826,10 @@
                 title: 'Supersnel',
                 description: 'Beantwoord 10 vragen binnen 30 seconden',
                 condition: (stats) => stats.avgTimePerQuestion < 3,
-                progress: (stats) => Math.min(100, Math.round((3 / stats.avgTimePerQuestion) * 100))
+                progress: (stats) => {
+                    if (stats.avgTimePerQuestion >= 3) return Math.min(100, Math.round((3 / stats.avgTimePerQuestion) * 100))
+                    return 100 // If avgTimePerQuestion is less than 3, progress is 100%
+                }
             },
             PERFECT_SCORE: {
                 id: 'perfect-score',
@@ -849,7 +852,7 @@
                 icon: '🎓',
                 title: 'Tafelmeester',
                 description: 'Beantwoord van elke tafel minstens één som goed',
-                condition: (stats) => stats.correctTablesPlayed.size === 10,
+                condition: (stats) => stats.correctTablesPlayed.size >= 10,
                 progress: (stats) => Math.round((stats.correctTablesPlayed.size / 10) * 100)
             },
             DEDICATION: {
@@ -1061,8 +1064,8 @@
             if (selectedTables.length === 0) {
                 highscoreTitle.textContent = 'Highscores (alle tafels)';
             } else {
-                const tafelNamen = selectedTables.sort().map(t => t).join(', ');
-                highscoreTitle.textContent = `Highscores (tafel ${tafelNamen})`;
+                const tafelNummers = selectedTables.sort((a, b) => a - b).join(', ');
+                highscoreTitle.textContent = `Highscores (tafel van ${tafelNummers})`;
             }
 
             // Get highscores for the current table selection or all highscores if no selection
@@ -1137,9 +1140,9 @@
                     // Toon de tafels in een gebruiksvriendelijk formaat
                     const tafelNummers = score.tafelSet.split('-');
                     if (tafelNummers.length === 1) {
-                        tablesCell.textContent = `${tafelNummers[0]}`;
+                        tablesCell.textContent = tafelNummers[0];
                     } else if (tafelNummers.length <= 3) {
-                        tablesCell.textContent = tafelNummers.map(t => `${t}`).join(', ');
+                        tablesCell.textContent = tafelNummers.join(', ');
                     } else {
                         tablesCell.textContent = `${tafelNummers.length} tafels`;
                     }
@@ -1384,11 +1387,13 @@
             const percentageScore = Math.round((score / questionCount) * 100);
             const avgTimePerQuestion = elapsedTime / questionCount;
 
-            // Update perfect score streak
+            // Update perfect score streak - properly reset when not 100%
             if (percentageScore === 100) {
                 gameStats.perfectScoreStreak = (gameStats.perfectScoreStreak || 0) + 1;
+                console.log('Perfect score! Streak increased to:', gameStats.perfectScoreStreak);
             } else {
                 gameStats.perfectScoreStreak = 0;
+                console.log('Not a perfect score. Streak reset to 0');
             }
 
             // Update game statistieken
@@ -1732,8 +1737,15 @@
                 };
             }
 
+            // Calculate elapsed time excluding paused time
+            const elapsedTime = (Date.now() - startTime - totalPausedTime) / 1000;
+
+            // Calculate average time per question using current question count
+            // If no questions answered yet, return Infinity to avoid division by zero
+            const avgTimePerQuestion = currentQuestion > 0 ? elapsedTime / (currentQuestion + 1) : Infinity;
+
             return {
-                avgTimePerQuestion: (Date.now() - startTime) / (1000 * (currentQuestion + 1)),
+                avgTimePerQuestion,
                 percentageScore: Math.round((score / questionCount) * 100),
                 maxStreak: Math.max(maxStreak, gameStats.highestStreak || 0),
                 uniqueTablesPlayed: gameStats.uniqueTablesPlayed,
@@ -1761,7 +1773,7 @@
             gameStats.gamesPlayed++;
             selectedTables.forEach(table => gameStats.uniqueTablesPlayed.add(table));
 
-            const gameTime = (Date.now() - startTime) / 1000;
+            const gameTime = (Date.now() - startTime - totalPausedTime) / 1000;
             if (gameTime < gameStats.fastestGame) {
                 gameStats.fastestGame = gameTime;
             }
