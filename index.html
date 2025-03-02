@@ -177,6 +177,29 @@
             color: #333;
         }
 
+        /* Delete button for highscores */
+        .delete-score-btn {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+            padding: 0;
+            margin-left: 5px;
+        }
+
+        .delete-score-btn:hover {
+            background-color: #e05555;
+            transform: scale(1.1);
+        }
+
         @media (max-width: 600px) {
             h1 {
                 font-size: 1.8rem;
@@ -411,6 +434,7 @@
                             <th>Tafels</th>
                             <th>Score</th>
                             <th>Tijd</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody id="highscoreTable">
@@ -478,7 +502,7 @@
         </div>
     </div>
 
-    <audio id="correctSound" src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAFAAAGUACFhYWFhYWFhYWFhYWFhYWFhYWFvb29vb29vb29vb29vb29vb29vb3t7e3t7e3t7e3t7e3t7e3t7e3t7f////////////////////////////////8AAAA8TEFNRTMuMTAwAZUAAAAALAAAACQAACXQgCQJAQAAAQAGUOV4xerAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xDEFIPAAAGkAAAAIAAANIAAAARVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7EMQpg8AAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sQxDSDwAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xDEXIPAAAGkAAAAIAAANIAAAAT////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////v/7EMR6g8AAAaQAAAAgAAA0gAAABP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7EMQAA8AAAaQAAAAgAAA0gAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQxAAAAAAAaQAAAAgAAA0gAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="></audio>
+    <audio id="correctSound" src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAFAAAGUACFhYWFhYWFhYWFhYWFhYWFhYWFvb29vb29vb29vb29vb29vb29vb3t7e3t7e3t7e3t7e3t7e3t7e3t7f////////////////////////////////8AAAA8TEFNRTMuMTAwAZUAAAAALAAAACQAACXQgCQJAQAAAQAGUOV4xerAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xDEFIPAAAGkAAAAIAAANIAAAARVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7EMQpg8AAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sQxDSDwAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xDEXIPAAAGkAAAAIAAANIAAAAT////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////v/7EMR6g8AAAaQAAAAgAAA0gAAABP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7EMQAA8AAAaQAAAAgAAA0gAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQxAAAAAAAaQAAAAgAAA0gAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="></audio>
     <audio id="wrongSound" src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU3LjU2LjEwMQAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADxgC9vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29vb29//////////////////////////////////////////////////////////////////8AAAAATGF2YzU3LjY0AAAAAAAAAAAAAAAAJAUHAAAAAAAAAOweUHFQTQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7UMQAAAeEDUi0DMAolaIhhjGAAiaNBqlgI1LXm95POTQqVOnFaTu8Z+8lvlA5S7Jd0nR8AAgCGKBgYHAxEwlhQQDCwkwyYADAxgJgYTDwYKhKAEIYDCQYYg6GDQWhhULwIAgLC4cLBwcQwADoYKAqAEMIBhAKhgUDIYNAuGAwBBgUADVZfDQiTAgMAQwCKoAAaKiLYADMvyIrIwc5WjYlJzfLarGwIGQwMFArMDg2MBweMVE+MIALMAQeAQRQkAo0IAZMiS6MCQaMGQcBAPMExJMGw1MCQBMCQtMEgXAIDhcVRhChgUBxhSChgyDgVC4wBB8BAcMAQJEIEDAwRBYDmOaVRhOEZgOBpg+CgiIBhiAqGSWFLJkGQYRoWbRhQvJjGNhhQBpiEAJgGC4BAIuGBooAQYLKhp4UGAQSmA4Yg0ABimFCmYPgKYDgGXKLmGwOGAwCmAI0GEgfl6WmCQMGCIImCICGGgPmQsGEYLGAYBl3cGBIFmCACmBAIGCgGmAYdjAUAYGWZdwU4wJAEFgVIgPMEwMMAQBAgCRKDRgABhgUAL5r+tXZGCIDGAACmAgKGNsKDASAIMgUIgEMGQPeevV6jTEFNRTMuMTAwqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqo="></audio>
     <audio id="laserSound" src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAAbAAAJXwAICgoMDhATExUYGhoeICMlJyksLi8yNDY4Oz0/QENGSEpNT1JUVlhbXV9iZGZpa21vcXR2eXt+gIOFiIqNj5KUl5mcnqClp6qsrrG0tri7vcDCxcfKzM7R09bY293g4uTn6evt8PP19/r8/v8AAAA8TEFNRTMuMTAwAZUAAAAALgkAABRAIAexhgAAgAAACV/2R5OeAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xDEFIPAAAGkAAAAIAAANIAAAARVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7EMQpg8AAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sQxDSDwAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xDEXIPAAAGkAAAAIAAANIAAAAT////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////v/7EMR6g8AAAaQAAAAgAAA0gAAABP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7EMQAA8AAAaQAAAAgAAA0gAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQRAAEAAABpAAAACAAANIAAAARMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7EEQIg8AAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sQRBUDwAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xBEIIPAAAGkAAAAIAAANIAAAAT////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////v/7EEQ4g8AAAaQAAAAgAAA0gAAABP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7EEQAA8AAAaQAAAAgAAA0gAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQRAAEAAABpAAAACAAANIAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></audio>
     <audio id="highscoreSound" src="data:audio/mp3;base64,//uQZAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAABqAAAvSwAICgoNDRAQExMVFxgYGhwdHR8hIiQlJycoKiwsLjAxMzQ2Nzc5Ozw+P0FCQkVGR0lLTExOUFFTVVZYWFpcXV9gYmNlZmdpamxsbm9xc3R2d3l6e31+gIGDhIaHiYqMjI6PkZKUlZeYmJqdnp+ho6SlqKipq62usbKztbe4uLq8vb/AwsXGyMnLzM7P0dLU1dfa29ze4OHj5ebp6uvt7vDx8/T29/n6/P3+AAAA5TEFNRTMuMTAwBEgAAAAALgAANSAkJCYLgAAAQAAAL0ti3m8cAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQRAAEAAABpAAAACAAANIAAAARMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/7EEQIg8AAAaQAAAAgAAA0gAAABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//sQRBUDwAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/+xBEIIPAAAGkAAAAIAAANIAAAAT////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////v/7EEQ4g8AAAaQAAAAgAAA0gAAABP///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7EEQAA8AAAaQAAAAgAAA0gAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQRAAEAAABpAAAACAAANIAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"></audio>
@@ -595,6 +619,8 @@
                 }
 
                 updateStartButtonState();
+                // Update de highscore tabel direct wanneer een tafel wordt geselecteerd
+                updateHighscoreTable();
             });
         });
 
@@ -649,6 +675,16 @@
         function updateHighscoreTable() {
             highscoreTable.innerHTML = '';
 
+            // Voeg een titel toe die aangeeft welke tafels worden getoond
+            const highscoreTitle = document.querySelector('.high-score h3');
+
+            if (selectedTables.length === 0) {
+                highscoreTitle.textContent = 'Highscores (alle tafels)';
+            } else {
+                const tafelNamen = selectedTables.sort().map(t => `tafel van ${t}`).join(', ');
+                highscoreTitle.textContent = `Highscores (${tafelNamen})`;
+            }
+
             // Get highscores for the current table selection or all highscores if no selection
             let allHighscores = [];
 
@@ -658,13 +694,20 @@
                 keys.forEach(key => {
                     const scores = JSON.parse(localStorage.getItem(key)) || [];
                     scores.forEach(score => {
+                        // Voeg de tafelset toe aan elk score object voor weergave
+                        score.tafelSet = key.replace('highscores-', '');
                         allHighscores.push(score);
                     });
                 });
             } else {
                 // Tables selected, show only those highscores
                 const tableKey = selectedTables.sort().join('-');
-                allHighscores = JSON.parse(localStorage.getItem(`highscores-${tableKey}`)) || [];
+                const scores = JSON.parse(localStorage.getItem(`highscores-${tableKey}`)) || [];
+                scores.forEach(score => {
+                    // Voeg de tafelset toe aan elk score object voor weergave
+                    score.tafelSet = tableKey;
+                    allHighscores.push(score);
+                });
             }
 
             // Ensure each highscore has a combinedScore
@@ -711,7 +754,15 @@
 
                     // Tables cell
                     const tablesCell = document.createElement('td');
-                    tablesCell.textContent = score.tables.split('-').join(', ');
+                    // Toon de tafels in een gebruiksvriendelijk formaat
+                    const tafelNummers = score.tafelSet.split('-');
+                    if (tafelNummers.length === 1) {
+                        tablesCell.textContent = `${tafelNummers[0]}`;
+                    } else if (tafelNummers.length <= 3) {
+                        tablesCell.textContent = tafelNummers.map(t => `${t}`).join(', ');
+                    } else {
+                        tablesCell.textContent = `${tafelNummers.length} tafels`;
+                    }
                     row.appendChild(tablesCell);
 
                     // Score cell
@@ -724,6 +775,19 @@
                     const timeCell = document.createElement('td');
                     timeCell.textContent = formatTime(score.time);
                     row.appendChild(timeCell);
+
+                    // Add delete button
+                    const actionCell = document.createElement('td');
+                    const deleteButton = document.createElement('button');
+                    deleteButton.className = 'delete-score-btn';
+                    deleteButton.innerHTML = '×';
+                    deleteButton.title = 'Verwijder score';
+                    deleteButton.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent event bubbling
+                        deleteHighscore(score.tafelSet, score);
+                    });
+                    actionCell.appendChild(deleteButton);
+                    row.appendChild(actionCell);
 
                     highscoreTable.appendChild(row);
                 });
@@ -1170,6 +1234,34 @@
             // Toon het selectiescherm en update de highscore tabel
             selectionScreen.style.display = 'block';
             updateHighscoreTable();
+        }
+
+        // Function to delete a highscore
+        function deleteHighscore(tafelSet, scoreToDelete) {
+            if (confirm('Weet je zeker dat je deze score wilt verwijderen?')) {
+                // Get the current highscores for this table set
+                const highscores = JSON.parse(localStorage.getItem(`highscores-${tafelSet}`)) || [];
+
+                // Find the index of the score to delete
+                // We need to match based on date, score, and time since we don't have a unique ID
+                const index = highscores.findIndex(score =>
+                    score.date === scoreToDelete.date &&
+                    score.score === scoreToDelete.score &&
+                    score.time === scoreToDelete.time &&
+                    score.totalQuestions === scoreToDelete.totalQuestions
+                );
+
+                if (index !== -1) {
+                    // Remove the score
+                    highscores.splice(index, 1);
+
+                    // Save back to localStorage
+                    localStorage.setItem(`highscores-${tafelSet}`, JSON.stringify(highscores));
+
+                    // Update the highscore table
+                    updateHighscoreTable();
+                }
+            }
         }
     </script>
 </body>
