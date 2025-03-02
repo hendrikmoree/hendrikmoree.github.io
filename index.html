@@ -351,8 +351,8 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            background-color: #4ecdc4;
-            color: white;
+            background-color: transparent;
+            color: #4ecdc4;
             border: none;
             border-radius: 50%;
             width: 40px;
@@ -362,12 +362,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background-color 0.3s;
+            transition: color 0.3s;
             z-index: 10;
         }
 
         .pause-button:hover {
-            background-color: #3db5ae;
+            background-color: transparent;
+            color: #3db5ae;
+            transform: scale(1.1);
         }
 
         /* Pauzemenu stijlen */
@@ -1188,6 +1190,7 @@
                 pauseStartTime = new Date();
                 clearInterval(timerInterval);
                 pauseMenu.style.display = 'flex';
+                pauseButton.style.display = 'none'; // Verberg de pauzeknop tijdens pauze
             }
         }
 
@@ -1199,6 +1202,7 @@
 
                 isPaused = false;
                 pauseMenu.style.display = 'none';
+                pauseButton.style.display = 'flex'; // Toon de pauzeknop weer
 
                 // Herstart de timer
                 timerInterval = setInterval(updateTimer, 1000);
