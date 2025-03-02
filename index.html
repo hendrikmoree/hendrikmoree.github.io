@@ -2,44 +2,61 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#f0f8ff">
     <title>Tafels Oefenen</title>
     <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            touch-action: manipulation;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             background-color: #f0f8ff;
             margin: 0;
-            padding: 20px;
+            padding: 10px;
             text-align: center;
             color: #333;
             min-height: 100vh;
+            min-height: -webkit-fill-available;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Prevent iOS zoom on input */
+        input, select, textarea {
+            font-size: 16px;
         }
 
         h1 {
             color: #ff6b6b;
-            font-size: 2rem;
+            font-size: 1.8rem;
             margin-bottom: 0.5rem;
         }
 
         h2 {
             color: #4ecdc4;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             margin-bottom: 0.5rem;
         }
 
         .container {
             background-color: white;
             border-radius: 20px;
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             max-width: 600px;
-            width: 100%;
+            width: calc(100% - 20px);
             margin: 0 auto;
+            box-sizing: border-box;
         }
 
         button {
@@ -47,16 +64,19 @@
             border: none;
             border-radius: 10px;
             color: white;
-            padding: 10px 20px;
-            margin: 10px 5px;
-            font-size: 1.2rem;
+            padding: 12px 24px;
+            margin: 8px 4px;
+            font-size: 1.1rem;
             cursor: pointer;
             transition: transform 0.2s, background-color 0.3s;
+            min-height: 44px;
+            min-width: 44px;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
-        button:hover {
-            background-color: #ff7b00;
-            transform: scale(1.05);
+        button:active {
+            transform: scale(0.95);
         }
 
         button.selected {
@@ -65,34 +85,39 @@
         }
 
         .question {
-            font-size: 2.5rem;
-            margin: 20px 0;
+            font-size: 2rem;
+            margin: 15px 0;
             color: #ff6b6b;
+            word-wrap: break-word;
         }
 
         .options {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 10px;
+            padding: 10px;
         }
 
         .option {
             background-color: #4ecdc4;
-            font-size: 1.8rem;
-            padding: 10px 25px;
+            font-size: 1.5rem;
+            padding: 15px;
             border-radius: 10px;
             transition: transform 0.2s, filter 0.3s;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .option:hover {
-            transform: scale(1.1);
-            filter: brightness(1.2);
+        .option:active {
+            transform: scale(0.95);
         }
 
         .screen-section {
-            margin: 20px 0;
+            margin: 15px 0;
             display: none;
+            width: 100%;
         }
 
         #gameScreen {
@@ -100,23 +125,23 @@
         }
 
         .score-display {
-            font-size: 1.5rem;
-            margin: 10px 0;
+            font-size: 1.3rem;
+            margin: 8px 0;
             color: #ff6b6b;
         }
 
         .high-score {
-            font-size: 1.2rem;
-            margin: 10px 0;
+            font-size: 1.1rem;
+            margin: 8px 0;
             color: #43aa8b;
         }
 
         .progress-bar {
-            height: 20px;
+            height: 15px;
             width: 100%;
             background-color: #eee;
-            border-radius: 10px;
-            margin: 15px 0;
+            border-radius: 8px;
+            margin: 12px 0;
             overflow: hidden;
         }
 
@@ -128,19 +153,19 @@
         }
 
         .emoji {
-            font-size: 2rem;
-            margin: 10px 0;
+            font-size: 1.8rem;
+            margin: 8px 0;
         }
 
         .timer {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: #ff6b6b;
-            margin: 10px 0;
+            margin: 8px 0;
         }
 
         .result-message {
-            font-size: 1.5rem;
-            margin: 20px 0;
+            font-size: 1.3rem;
+            margin: 15px 0;
             font-weight: bold;
             opacity: 0;
             transform: translateY(20px);
@@ -163,59 +188,102 @@
         .highscore-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 15px 0;
+            margin: 12px 0;
+            font-size: 0.9rem;
         }
 
         .highscore-table th, .highscore-table td {
-            padding: 10px;
+            padding: 8px;
             text-align: center;
             border-bottom: 1px solid #ddd;
         }
 
-        .highscore-table th {
-            background-color: #f0f8ff;
-            color: #333;
-        }
-
-        /* Delete button for highscores */
         .delete-score-btn {
-            background-color: #ff6b6b;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 12px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.3s;
-            padding: 0;
-            margin-left: 5px;
+            padding: 5px;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+            margin: 0;
+            min-height: unset;
         }
 
-        .delete-score-btn:hover {
-            background-color: #e05555;
-            transform: scale(1.1);
-        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
 
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 1.8rem;
+            button {
+                padding: 10px 20px;
+                font-size: 1rem;
+                margin: 5px 2px;
             }
 
             .question {
-                font-size: 2rem;
+                font-size: 1.8rem;
             }
 
             .option {
-                font-size: 1.5rem;
-                padding: 8px 20px;
+                font-size: 1.3rem;
+                padding: 12px;
+            }
+
+            .highscore-table {
+                font-size: 0.8rem;
+            }
+
+            .highscore-table th, .highscore-table td {
+                padding: 6px;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            h2 {
+                font-size: 1.2rem;
             }
         }
 
-        /* Result screen styles */
+        @media (max-width: 360px) {
+            .container {
+                padding: 8px;
+            }
+
+            button {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+
+            .question {
+                font-size: 1.6rem;
+            }
+
+            .option {
+                font-size: 1.2rem;
+                padding: 10px;
+            }
+        }
+
+        /* Fix for iOS height issues */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                min-height: -webkit-fill-available;
+            }
+        }
+
+        /* Improved touch feedback */
+        @media (hover: hover) {
+            button:hover {
+                background-color: #ff7b00;
+                transform: scale(1.05);
+            }
+
+            .option:hover {
+                transform: scale(1.1);
+                filter: brightness(1.2);
+            }
+        }
+
         .result-emoji {
             font-size: 4rem;
             margin: 10px 0;
