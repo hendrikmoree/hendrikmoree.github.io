@@ -822,19 +822,16 @@
         const BADGES = {
             SPEED_DEMON: {
                 id: 'speed-demon',
-                icon: '⚡',
-                title: 'Supersnel',
+                icon: '🚀',
+                title: 'Reken-raket',
                 description: 'Beantwoord 10 vragen binnen 30 seconden',
                 condition: (stats) => stats.avgTimePerQuestion < 3,
-                progress: (stats) => {
-                    if (stats.avgTimePerQuestion >= 3) return Math.min(100, Math.round((3 / stats.avgTimePerQuestion) * 100))
-                    return 100 // If avgTimePerQuestion is less than 3, progress is 100%
-                }
+                progress: (stats) => Math.min(100, Math.round((3 / stats.avgTimePerQuestion) * 100))
             },
             PERFECT_SCORE: {
                 id: 'perfect-score',
-                icon: '🏆',
-                title: 'Perfect!',
+                icon: '🦸',
+                title: 'Superheld',
                 description: 'Behaal een 100% score',
                 condition: (stats) => stats.percentageScore === 100,
                 progress: (stats) => stats.percentageScore
@@ -842,39 +839,39 @@
             STREAK_MASTER: {
                 id: 'streak-master',
                 icon: '🔥',
-                title: 'Reeksmeester',
+                title: 'Sommen-kampioen',
                 description: 'Behaal een reeks van 10 goede antwoorden',
                 condition: (stats) => stats.maxStreak >= 10,
                 progress: (stats) => Math.min(100, (stats.maxStreak / 10) * 100)
             },
             TABLE_MASTER: {
                 id: 'table-master',
-                icon: '🎓',
-                title: 'Tafelmeester',
+                icon: '🧠',
+                title: 'Tafelwonder',
                 description: 'Beantwoord van elke tafel minstens één som goed',
                 condition: (stats) => stats.correctTablesPlayed.size >= 10,
                 progress: (stats) => Math.round((stats.correctTablesPlayed.size / 10) * 100)
             },
             DEDICATION: {
                 id: 'dedication',
-                icon: '🌟',
-                title: 'Toegewijd',
+                icon: '🐢',
+                title: 'Doorzetter',
                 description: 'Speel 5 spellen achter elkaar',
                 condition: (stats) => stats.gamesPlayed >= 5,
                 progress: (stats) => Math.min(100, (stats.gamesPlayed / 5) * 100)
             },
             SPEED_MASTER: {
                 id: 'speed-master',
-                icon: '🚀',
-                title: 'Snelheidsmeester',
+                icon: '⚡',
+                title: 'Flitskampioen',
                 description: 'Behaal een perfecte score binnen 30 seconden (10 vragen)',
                 condition: (stats) => stats.percentageScore === 100 && stats.avgTimePerQuestion < 3,
                 progress: (stats) => stats.percentageScore === 100 ? Math.min(100, Math.round((3 / stats.avgTimePerQuestion) * 100)) : 0
             },
             MARATHON_MASTER: {
                 id: 'marathon-master',
-                icon: '🏃',
-                title: 'Marathonmeester',
+                icon: '🐯',
+                title: 'Tafeltijger',
                 description: 'Behaal een perfecte score met 5 verschillende tafels (10 vragen)',
                 condition: (stats) => {
                     return stats.percentageScore === 100 && stats.lastSelectedTables?.length >= 5 && stats.totalQuestions >= 10;
@@ -885,8 +882,8 @@
             },
             ULTIMATE_STREAK: {
                 id: 'ultimate-streak',
-                icon: '⭐',
-                title: 'Ultieme Reeks',
+                icon: '🌠',
+                title: 'Rekenster',
                 description: 'Behaal een reeks van 20 goede antwoorden',
                 condition: (stats) => stats.maxStreak >= 20,
                 progress: (stats) => Math.min(100, (stats.maxStreak / 20) * 100)
@@ -894,7 +891,7 @@
             GRANDMASTER: {
                 id: 'grandmaster',
                 icon: '👑',
-                title: 'Grootmeester',
+                title: 'Tafelkoning',
                 description: 'Behaal 3 perfecte scores achter elkaar',
                 condition: (stats) => stats.perfectScoreStreak >= 3,
                 progress: (stats) => Math.min(100, (stats.perfectScoreStreak / 3) * 100)
