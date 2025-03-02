@@ -22,7 +22,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            background-color: #f0f8ff;
+            background-color: #fafafa;
             margin: 0;
             padding: 10px;
             text-align: center;
@@ -547,6 +547,139 @@
             font-size: 4rem;
             margin: 10px 0;
         }
+
+        /* Badge systeem stijlen */
+        .badges-screen {
+            display: none;
+            padding: 20px 0;
+            text-align: center;
+            width: 100%;
+        }
+
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        .badge {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s;
+            position: relative;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 200px;
+            box-sizing: border-box;
+        }
+
+        .badge.locked {
+            filter: grayscale(1);
+            opacity: 0.7;
+        }
+
+        .badge:hover {
+            transform: translateY(-5px);
+        }
+
+        .badge-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .badge-title {
+            font-weight: bold;
+            color: #333;
+            margin: 5px 0;
+        }
+
+        .badge-description {
+            font-size: 0.9rem;
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .badge-progress {
+            font-size: 0.8rem;
+            color: #43aa8b;
+            margin-top: 5px;
+        }
+
+        .badge-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #43aa8b;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1000;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translate(-50%, 100%);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+
+        .view-badges-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            padding: 0;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            background-color: #f0f0f0;
+            color: #666;
+        }
+
+        @media (max-width: 480px) {
+            .view-badges-btn {
+                width: 20px;
+                height: 20px;
+                font-size: 12px;
+                top: 2px;
+                right: 2px;
+            }
+        }
+
+        /* Badge unlock animatie */
+        @keyframes unlockBadge {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .badge.unlocking {
+            animation: unlockBadge 0.5s ease-out;
+        }
+
+        #selectionScreen {
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -577,6 +710,7 @@
             <div>
                 <button id="startButton" disabled>Start!</button>
             </div>
+            <button class="view-badges-btn" onclick="showScreen('badgesScreen')">🏆</button>
             <div class="high-score">
                 <h3>Highscores</h3>
                 <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">Score = % goed × tijdbonus</p>
@@ -653,6 +787,18 @@
                 <button id="menuButton" class="button menu-button">Terug naar menu</button>
             </div>
         </div>
+
+        <div id="badgesScreen" class="screen-section badges-screen">
+            <h2>Mijn Badges</h2>
+            <div class="badges-grid" id="badgesGrid">
+                <!-- Badges worden hier dynamisch toegevoegd -->
+            </div>
+            <button class="menu-button" onclick="showScreen('selectionScreen')">Terug naar menu</button>
+        </div>
+
+        <div class="badge-notification" id="badgeNotification">
+            <!-- Badge meldingen verschijnen hier -->
+        </div>
     </div>
 
     <script>
@@ -671,6 +817,103 @@
         let isPaused = false;
         let pauseStartTime;
         let totalPausedTime = 0;
+
+        // Badge systeem
+        const BADGES = {
+            SPEED_DEMON: {
+                id: 'speed-demon',
+                icon: '⚡',
+                title: 'Supersnel',
+                description: 'Beantwoord 10 vragen binnen 30 seconden',
+                condition: (stats) => stats.avgTimePerQuestion < 3,
+                progress: (stats) => Math.min(100, Math.round((3 / stats.avgTimePerQuestion) * 100))
+            },
+            PERFECT_SCORE: {
+                id: 'perfect-score',
+                icon: '🏆',
+                title: 'Perfect!',
+                description: 'Behaal een 100% score',
+                condition: (stats) => stats.percentageScore === 100,
+                progress: (stats) => stats.percentageScore
+            },
+            STREAK_MASTER: {
+                id: 'streak-master',
+                icon: '🔥',
+                title: 'Reeksmeester',
+                description: 'Behaal een reeks van 10 goede antwoorden',
+                condition: (stats) => stats.maxStreak >= 10,
+                progress: (stats) => Math.min(100, (stats.maxStreak / 10) * 100)
+            },
+            TABLE_MASTER: {
+                id: 'table-master',
+                icon: '🎓',
+                title: 'Tafelmeester',
+                description: 'Beantwoord van elke tafel minstens één som goed',
+                condition: (stats) => stats.correctTablesPlayed.size === 10,
+                progress: (stats) => Math.round((stats.correctTablesPlayed.size / 10) * 100)
+            },
+            DEDICATION: {
+                id: 'dedication',
+                icon: '🌟',
+                title: 'Toegewijd',
+                description: 'Speel 5 spellen achter elkaar',
+                condition: (stats) => stats.gamesPlayed >= 5,
+                progress: (stats) => Math.min(100, (stats.gamesPlayed / 5) * 100)
+            },
+            SPEED_MASTER: {
+                id: 'speed-master',
+                icon: '🚀',
+                title: 'Snelheidsmeester',
+                description: 'Behaal een perfecte score binnen 30 seconden (10 vragen)',
+                condition: (stats) => stats.percentageScore === 100 && stats.avgTimePerQuestion < 3,
+                progress: (stats) => stats.percentageScore === 100 ? Math.min(100, Math.round((3 / stats.avgTimePerQuestion) * 100)) : 0
+            },
+            MARATHON_MASTER: {
+                id: 'marathon-master',
+                icon: '🏃',
+                title: 'Marathonmeester',
+                description: 'Behaal een perfecte score met 5 verschillende tafels (10 vragen)',
+                condition: (stats) => {
+                    return stats.percentageScore === 100 && stats.lastSelectedTables?.length >= 5 && stats.totalQuestions >= 10;
+                },
+                progress: (stats) => {
+                    return stats.percentageScore === 100 && stats.totalQuestions >= 10 ? Math.min(100, ((stats.lastSelectedTables?.length || 0) / 5) * 100) : 0;
+                }
+            },
+            ULTIMATE_STREAK: {
+                id: 'ultimate-streak',
+                icon: '⭐',
+                title: 'Ultieme Reeks',
+                description: 'Behaal een reeks van 20 goede antwoorden',
+                condition: (stats) => stats.maxStreak >= 20,
+                progress: (stats) => Math.min(100, (stats.maxStreak / 20) * 100)
+            },
+            GRANDMASTER: {
+                id: 'grandmaster',
+                icon: '👑',
+                title: 'Grootmeester',
+                description: 'Behaal 3 perfecte scores achter elkaar',
+                condition: (stats) => stats.perfectScoreStreak >= 3,
+                progress: (stats) => Math.min(100, (stats.perfectScoreStreak / 3) * 100)
+            }
+        };
+
+        // Laad behaalde badges uit localStorage
+        let earnedBadges = JSON.parse(localStorage.getItem('earnedBadges')) || {};
+        let gameStats = JSON.parse(localStorage.getItem('gameStats')) || {
+            gamesPlayed: 0,
+            uniqueTablesPlayed: [],
+            correctTablesPlayed: [],
+            fastestGame: Infinity,
+            highestStreak: 0,
+            perfectScoreStreak: 0,
+            lastSelectedTables: [],
+            totalQuestions: 0
+        };
+
+        // Convert Arrays to Sets
+        gameStats.uniqueTablesPlayed = new Set(gameStats.uniqueTablesPlayed || []);
+        gameStats.correctTablesPlayed = new Set(gameStats.correctTablesPlayed || []);
 
         // DOM Elements
         const selectionScreen = document.getElementById('selectionScreen');
@@ -818,8 +1061,8 @@
             if (selectedTables.length === 0) {
                 highscoreTitle.textContent = 'Highscores (alle tafels)';
             } else {
-                const tafelNamen = selectedTables.sort().map(t => `tafel van ${t}`).join(', ');
-                highscoreTitle.textContent = `Highscores (${tafelNamen})`;
+                const tafelNamen = selectedTables.sort().map(t => t).join(', ');
+                highscoreTitle.textContent = `Highscores (tafel ${tafelNamen})`;
             }
 
             // Get highscores for the current table selection or all highscores if no selection
@@ -1079,6 +1322,9 @@
                 currentStreak++;
                 maxStreak = Math.max(maxStreak, currentStreak);
 
+                // Voeg de tafel toe aan correctTablesPlayed als het antwoord goed is
+                gameStats.correctTablesPlayed.add(question.tafel);
+
                 questionElement.classList.add('animate-correct');
                 setTimeout(() => {
                     questionElement.classList.remove('animate-correct');
@@ -1132,13 +1378,26 @@
 
         function endGame() {
             clearInterval(timerInterval);
-            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+            const elapsedTime = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
 
-            // Calculate percentage score
+            // Bereken scores en update stats
             const percentageScore = Math.round((score / questionCount) * 100);
-
-            // Calculate average time per question
             const avgTimePerQuestion = elapsedTime / questionCount;
+
+            // Update perfect score streak
+            if (percentageScore === 100) {
+                gameStats.perfectScoreStreak = (gameStats.perfectScoreStreak || 0) + 1;
+            } else {
+                gameStats.perfectScoreStreak = 0;
+            }
+
+            // Update game statistieken
+            gameStats.totalQuestions = questionCount;
+            gameStats.lastSelectedTables = [...selectedTables]; // Sla de geselecteerde tafels op
+            updateGameStats();
+
+            // Check voor nieuwe badges
+            checkAndAwardBadges();
 
             // Determine time bonus
             let timeBonus = 1.0;
@@ -1370,6 +1629,177 @@
             // Toon het selectiescherm en update de highscore tabel
             selectionScreen.style.display = 'block';
             updateHighscoreTable();
+        }
+
+        function showScreen(screenId) {
+            // Verberg alle schermen
+            document.querySelectorAll('.screen-section').forEach(screen => {
+                screen.style.display = 'none';
+            });
+
+            // Toon het gewenste scherm met de juiste display stijl
+            const screen = document.getElementById(screenId);
+            switch (screenId) {
+                case 'badgesScreen':
+                    screen.style.display = 'block';
+                    break;
+                case 'selectionScreen':
+                    screen.style.display = 'block';
+                    break;
+                case 'gameScreen':
+                case 'resultScreen':
+                    screen.style.display = 'flex';
+                    break;
+            }
+
+            // Update badges als we naar het badge scherm gaan
+            if (screenId === 'badgesScreen') {
+                updateBadgesDisplay();
+            }
+        }
+
+        function updateBadgesDisplay() {
+            const badgesGrid = document.getElementById('badgesGrid');
+            badgesGrid.innerHTML = '';
+
+            // Log voor debugging
+            console.log('Current gameStats:', {
+                gamesPlayed: gameStats.gamesPlayed,
+                uniqueTablesPlayed: Array.from(gameStats.uniqueTablesPlayed),
+                correctTablesPlayed: Array.from(gameStats.correctTablesPlayed),
+                fastestGame: gameStats.fastestGame,
+                highestStreak: gameStats.highestStreak
+            });
+            console.log('Current earnedBadges:', earnedBadges);
+            console.log('All badges:', Object.values(BADGES).map(b => b.title));
+
+            Object.values(BADGES).forEach(badge => {
+                const isEarned = earnedBadges[badge.id];
+                const stats = calculateCurrentStats();
+                const progress = badge.progress(stats);
+
+                console.log(`Badge ${badge.title}:`, {
+                    isEarned,
+                    progress,
+                    stats: {
+                        avgTimePerQuestion: stats.avgTimePerQuestion,
+                        percentageScore: stats.percentageScore,
+                        maxStreak: stats.maxStreak,
+                        uniqueTablesPlayed: Array.from(stats.uniqueTablesPlayed),
+                        correctTablesPlayed: Array.from(stats.correctTablesPlayed),
+                        gamesPlayed: stats.gamesPlayed
+                    }
+                });
+
+                const badgeElement = document.createElement('div');
+                badgeElement.className = `badge ${isEarned ? '' : 'locked'}`;
+                badgeElement.innerHTML = `
+                    <div class="badge-icon">${badge.icon}</div>
+                    <div class="badge-title">${badge.title}</div>
+                    <div class="badge-description">${badge.description}</div>
+                `;
+                badgesGrid.appendChild(badgeElement);
+            });
+        }
+
+        function showBadgeNotification(badge) {
+            const notification = document.getElementById('badgeNotification');
+            notification.innerHTML = `
+                <div style="font-size: 2em">${badge.icon}</div>
+                <div><strong>Nieuwe badge ontgrendeld!</strong></div>
+                <div>${badge.title}</div>
+            `;
+            notification.style.display = 'block';
+
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        function calculateCurrentStats() {
+            // Als er nog geen spel is gespeeld
+            if (!startTime) {
+                return {
+                    avgTimePerQuestion: Infinity,
+                    percentageScore: 0,
+                    maxStreak: gameStats.highestStreak || 0,
+                    uniqueTablesPlayed: gameStats.uniqueTablesPlayed,
+                    correctTablesPlayed: gameStats.correctTablesPlayed,
+                    gamesPlayed: gameStats.gamesPlayed,
+                    perfectScoreStreak: gameStats.perfectScoreStreak || 0,
+                    lastSelectedTables: gameStats.lastSelectedTables || [],
+                    totalQuestions: gameStats.totalQuestions || 0
+                };
+            }
+
+            return {
+                avgTimePerQuestion: (Date.now() - startTime) / (1000 * (currentQuestion + 1)),
+                percentageScore: Math.round((score / questionCount) * 100),
+                maxStreak: Math.max(maxStreak, gameStats.highestStreak || 0),
+                uniqueTablesPlayed: gameStats.uniqueTablesPlayed,
+                correctTablesPlayed: gameStats.correctTablesPlayed,
+                gamesPlayed: gameStats.gamesPlayed,
+                perfectScoreStreak: gameStats.perfectScoreStreak || 0,
+                lastSelectedTables: selectedTables, // Gebruik de huidige geselecteerde tafels tijdens het spel
+                totalQuestions: questionCount
+            };
+        }
+
+        function checkAndAwardBadges() {
+            const stats = calculateCurrentStats();
+
+            Object.values(BADGES).forEach(badge => {
+                if (!earnedBadges[badge.id] && badge.condition(stats)) {
+                    earnedBadges[badge.id] = true;
+                    localStorage.setItem('earnedBadges', JSON.stringify(earnedBadges));
+                    showBadgeNotification(badge);
+                }
+            });
+        }
+
+        function updateGameStats() {
+            gameStats.gamesPlayed++;
+            selectedTables.forEach(table => gameStats.uniqueTablesPlayed.add(table));
+
+            const gameTime = (Date.now() - startTime) / 1000;
+            if (gameTime < gameStats.fastestGame) {
+                gameStats.fastestGame = gameTime;
+            }
+
+            if (maxStreak > gameStats.highestStreak) {
+                gameStats.highestStreak = maxStreak;
+            }
+
+            // Convert Sets to Arrays for localStorage
+            const statsForStorage = {
+                ...gameStats,
+                uniqueTablesPlayed: Array.from(gameStats.uniqueTablesPlayed),
+                correctTablesPlayed: Array.from(gameStats.correctTablesPlayed),
+                perfectScoreStreak: gameStats.perfectScoreStreak || 0,
+                lastSelectedTables: [...selectedTables] // Sla de huidige geselecteerde tafels op
+            };
+            localStorage.setItem('gameStats', JSON.stringify(statsForStorage));
+        }
+
+        // Voeg een reset functie toe voor het badge systeem
+        function resetBadges() {
+            if (confirm('Weet je zeker dat je alle badges wilt resetten?')) {
+                earnedBadges = {};
+                gameStats = {
+                    gamesPlayed: 0,
+                    uniqueTablesPlayed: new Set(),
+                    correctTablesPlayed: new Set(),
+                    fastestGame: Infinity,
+                    highestStreak: 0
+                };
+                localStorage.setItem('earnedBadges', JSON.stringify(earnedBadges));
+                localStorage.setItem('gameStats', JSON.stringify({
+                    ...gameStats,
+                    uniqueTablesPlayed: [],
+                    correctTablesPlayed: []
+                }));
+                updateBadgesDisplay();
+            }
         }
     </script>
 </body>
