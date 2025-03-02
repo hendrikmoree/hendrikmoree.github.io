@@ -1667,34 +1667,10 @@
             const badgesGrid = document.getElementById('badgesGrid');
             badgesGrid.innerHTML = '';
 
-            // Log voor debugging
-            console.log('Current gameStats:', {
-                gamesPlayed: gameStats.gamesPlayed,
-                uniqueTablesPlayed: Array.from(gameStats.uniqueTablesPlayed),
-                correctTablesPlayed: Array.from(gameStats.correctTablesPlayed),
-                fastestGame: gameStats.fastestGame,
-                highestStreak: gameStats.highestStreak
-            });
-            console.log('Current earnedBadges:', earnedBadges);
-            console.log('All badges:', Object.values(BADGES).map(b => b.title));
-
             Object.values(BADGES).forEach(badge => {
                 const isEarned = earnedBadges[badge.id];
                 const stats = calculateCurrentStats();
                 const progress = badge.progress(stats);
-
-                console.log(`Badge ${badge.title}:`, {
-                    isEarned,
-                    progress,
-                    stats: {
-                        avgTimePerQuestion: stats.avgTimePerQuestion,
-                        percentageScore: stats.percentageScore,
-                        maxStreak: stats.maxStreak,
-                        uniqueTablesPlayed: Array.from(stats.uniqueTablesPlayed),
-                        correctTablesPlayed: Array.from(stats.correctTablesPlayed),
-                        gamesPlayed: stats.gamesPlayed
-                    }
-                });
 
                 const badgeElement = document.createElement('div');
                 badgeElement.className = `badge ${isEarned ? '' : 'locked'}`;
@@ -1791,6 +1767,9 @@
                 lastSelectedTables: [...selectedTables] // Sla de huidige geselecteerde tafels op
             };
             localStorage.setItem('gameStats', JSON.stringify(statsForStorage));
+
+            // Controleer voor het einde van het spel nogmaals of er badges zijn verdiend
+            checkAndAwardBadges();
         }
 
         // Voeg een reset functie toe voor het badge systeem
@@ -1802,14 +1781,19 @@
                     uniqueTablesPlayed: new Set(),
                     correctTablesPlayed: new Set(),
                     fastestGame: Infinity,
-                    highestStreak: 0
+                    highestStreak: 0,
+                    perfectScoreStreak: 0,
+                    lastSelectedTables: [],
+                    totalQuestions: 0
                 };
                 localStorage.setItem('earnedBadges', JSON.stringify(earnedBadges));
                 localStorage.setItem('gameStats', JSON.stringify({
                     ...gameStats,
                     uniqueTablesPlayed: [],
-                    correctTablesPlayed: []
+                    correctTablesPlayed: [],
+                    lastSelectedTables: []
                 }));
+
                 updateBadgesDisplay();
             }
         }
