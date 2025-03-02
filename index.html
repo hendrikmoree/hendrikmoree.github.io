@@ -759,6 +759,50 @@
             startButton.disabled = selectedTables.length === 0 || questionCount === 0;
         }
 
+        function formatFriendlyDate(dateString) {
+            let date
+            // Check if the date is in ISO format or old local format
+            if (dateString.includes('T')) {
+                // ISO format
+                date = new Date(dateString)
+            } else {
+                // Old format (local date string)
+                const [day, month, year] = dateString.split('-')
+                date = new Date(year, month - 1, day)
+            }
+
+            const now = new Date()
+            const diffTime = Math.abs(now - date)
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+
+            if (diffDays === 0) return 'vandaag'
+            if (diffDays === 1) return 'gisteren'
+            if (diffDays < 7) return `${diffDays} dagen geleden`
+            if (diffDays < 14) return 'vorige week'
+            if (diffDays < 30) return 'deze maand'
+            return 'lang geleden'
+        }
+
+        // Migrate existing scores to new date format
+        function migrateScores() {
+            const keys = Object.keys(localStorage).filter(key => key.startsWith('highscores-'))
+            keys.forEach(key => {
+                const scores = JSON.parse(localStorage.getItem(key)) || []
+                const updatedScores = scores.map(score => {
+                    if (!score.date.includes('T')) {  // If not in ISO format
+                        const [day, month, year] = score.date.split('-')
+                        const date = new Date(year, month - 1, day)
+                        score.date = date.toISOString()
+                    }
+                    return score
+                })
+                localStorage.setItem(key, JSON.stringify(updatedScores))
+            })
+        }
+
+        // Run migration when page loads
+        migrateScores()
+
         function updateHighscoreTable() {
             highscoreTable.innerHTML = '';
 
@@ -834,9 +878,9 @@
                 allHighscores.slice(0, 5).forEach(score => {
                     const row = document.createElement('tr');
 
-                    // Date cell
+                    // Date cell with friendly format
                     const dateCell = document.createElement('td');
-                    dateCell.textContent = score.date;
+                    dateCell.textContent = formatFriendlyDate(score.date);
                     row.appendChild(dateCell);
 
                     // Tables cell
@@ -1140,7 +1184,7 @@
             let highscores = JSON.parse(localStorage.getItem(`highscores-${tableKey}`)) || [];
 
             const newHighscore = {
-                date: new Date().toLocaleDateString(),
+                date: new Date().toISOString(), // Store as ISO string for better date handling
                 tables: tableKey,
                 score: score,
                 totalQuestions: questionCount,
