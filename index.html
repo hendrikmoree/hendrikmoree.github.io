@@ -322,6 +322,55 @@
         .menu-button:hover {
             background-color: #3db5ae;
         }
+
+        /* Pauzeknop stijlen */
+        .pause-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #4ecdc4;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+            z-index: 10;
+        }
+
+        .pause-button:hover {
+            background-color: #3db5ae;
+        }
+
+        /* Pauzemenu stijlen */
+        #pauseMenu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            border-radius: 20px;
+        }
+
+        #pauseMenu h2 {
+            margin-bottom: 20px;
+        }
+
+        #pauseMenu button {
+            margin: 10px;
+            min-width: 200px;
+        }
     </style>
 </head>
 <body>
@@ -372,6 +421,7 @@
         </div>
 
         <div id="gameScreen" class="screen-section">
+            <button id="pauseButton" class="pause-button" title="Pauze">⏸️</button>
             <div class="score-display">
                 Score: <span id="currentScore">0</span> / <span id="totalQuestions">0</span>
             </div>
@@ -387,6 +437,13 @@
             <div class="options" id="options"></div>
             <div class="result-message" id="resultMessage"></div>
             <div class="emoji" id="emoji"></div>
+
+            <!-- Pauzemenu -->
+            <div id="pauseMenu">
+                <h2>Pauze</h2>
+                <button id="resumeButton">Doorgaan</button>
+                <button id="quitButton" class="menu-button">Terug naar menu</button>
+            </div>
         </div>
 
         <div id="resultScreen" class="screen-section">
@@ -441,6 +498,9 @@
         let audioContext = null;
         let currentStreak = 0;
         let maxStreak = 0;
+        let isPaused = false;
+        let pauseStartTime;
+        let totalPausedTime = 0;
 
         // Audio files
         const audioFiles = {
@@ -454,6 +514,10 @@
         const selectionScreen = document.getElementById('selectionScreen');
         const gameScreen = document.getElementById('gameScreen');
         const resultScreen = document.getElementById('resultScreen');
+        const pauseMenu = document.getElementById('pauseMenu');
+        const pauseButton = document.getElementById('pauseButton');
+        const resumeButton = document.getElementById('resumeButton');
+        const quitButton = document.getElementById('quitButton');
         const tafelButtons = document.querySelectorAll('.tafel-btn');
         const questionCountButtons = document.querySelectorAll('.question-count-btn');
         const startButton = document.getElementById('startButton');
@@ -572,6 +636,11 @@
             updateHighscoreTable();
         });
 
+        // Event Listeners voor pauzeknop
+        pauseButton.addEventListener('click', pauseGame);
+        resumeButton.addEventListener('click', resumeGame);
+        quitButton.addEventListener('click', quitGame);
+
         // Functions
         function updateStartButtonState() {
             startButton.disabled = selectedTables.length === 0 || questionCount === 0;
@@ -662,6 +731,10 @@
         }
 
         function startGame() {
+            // Reset pauze variabelen
+            isPaused = false;
+            totalPausedTime = 0;
+
             selectionScreen.style.display = 'none';
             gameScreen.style.display = 'block';
 
@@ -867,8 +940,10 @@
         }
 
         function updateTimer() {
-            const elapsedSeconds = Math.floor((new Date() - startTime) / 1000);
-            timerElement.textContent = `Tijd: ${elapsedSeconds} seconden`;
+            if (!isPaused) {
+                const elapsedSeconds = Math.floor(((new Date() - startTime) - totalPausedTime) / 1000);
+                timerElement.textContent = `Tijd: ${elapsedSeconds} seconden`;
+            }
         }
 
         function endGame() {
@@ -1040,6 +1115,61 @@
                     console.error(`Error playing ${type} sound:`, error);
                 });
             }
+        }
+
+        // Pauze functies
+        function pauseGame() {
+            if (!isPaused) {
+                isPaused = true;
+                pauseStartTime = new Date();
+                clearInterval(timerInterval);
+                pauseMenu.style.display = 'flex';
+            }
+        }
+
+        function resumeGame() {
+            if (isPaused) {
+                // Bereken hoelang het spel gepauzeerd was
+                const pauseDuration = new Date() - pauseStartTime;
+                totalPausedTime += pauseDuration;
+
+                isPaused = false;
+                pauseMenu.style.display = 'none';
+
+                // Herstart de timer
+                timerInterval = setInterval(updateTimer, 1000);
+                updateTimer(); // Update meteen
+            }
+        }
+
+        function quitGame() {
+            // Stop de timer
+            clearInterval(timerInterval);
+
+            // Verberg het spel en pauzemenu
+            gameScreen.style.display = 'none';
+            pauseMenu.style.display = 'none';
+
+            // Reset de pauze status
+            isPaused = false;
+            totalPausedTime = 0;
+
+            // Reset de geselecteerde tafels en vraagaantal
+            tafelButtons.forEach(button => {
+                button.classList.remove('selected');
+            });
+            questionCountButtons.forEach(button => {
+                button.classList.remove('selected');
+            });
+            selectedTables = [];
+            questionCount = 0;
+
+            // Update de start knop status
+            updateStartButtonState();
+
+            // Toon het selectiescherm en update de highscore tabel
+            selectionScreen.style.display = 'block';
+            updateHighscoreTable();
         }
     </script>
 </body>
