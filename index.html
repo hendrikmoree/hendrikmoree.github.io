@@ -1021,11 +1021,16 @@
             }
 
             const now = new Date()
-            const diffTime = Math.abs(now - date)
+
+            // Reset time parts to compare just the dates
+            const dateWithoutTime = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+            const nowWithoutTime = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+            const diffTime = Math.abs(nowWithoutTime - dateWithoutTime)
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
 
-            if (diffDays === 0) return 'vandaag'
-            if (diffDays === 1) return 'gisteren'
+            if (diffDays === 0 && date.getDate() === now.getDate()) return 'vandaag'
+            if (diffDays === 1 && dateWithoutTime < nowWithoutTime) return 'gisteren'
             if (diffDays < 7) return `${diffDays} dagen geleden`
             if (diffDays < 14) return 'vorige week'
             if (diffDays < 30) return 'deze maand'
