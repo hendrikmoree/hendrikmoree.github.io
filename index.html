@@ -984,6 +984,10 @@
         startButton.addEventListener('click', startGame);
         playAgainButton.addEventListener('click', () => {
             resultScreen.style.display = 'none';
+            // Reset pause button state before starting a new game
+            isPaused = false;
+            pauseButton.style.display = 'flex';
+            pauseMenu.style.display = 'none';
             startGame();
         });
 
