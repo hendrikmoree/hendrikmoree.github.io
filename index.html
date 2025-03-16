@@ -817,6 +817,11 @@
         let isPaused = false;
         let pauseStartTime;
         let totalPausedTime = 0;
+        // Add variables for click prevention
+        let isProcessingAnswer = false;
+        let lastAnswerTime = 0;
+        let minimumQuestionTime = 1000; // Minimum time in ms between answers (1 second)
+        let optionsDisabled = false;
 
         // Badge systeem
         const BADGES = {
@@ -1249,6 +1254,11 @@
                 return;
             }
 
+            // Reset the answer processing flag
+            isProcessingAnswer = false;
+            optionsDisabled = false;
+            lastAnswerTime = Date.now();
+
             const question = questions[currentQuestion];
 
             // Generate random colors for the numbers
@@ -1313,7 +1323,28 @@
                 // Ensure text is always readable by using white text
                 button.style.color = 'white';
 
-                button.addEventListener('click', () => checkAnswer(answer));
+                button.addEventListener('click', () => {
+                    // Prevent rapid clicking and multiple submissions
+                    if (isProcessingAnswer || optionsDisabled) {
+                        return;
+                    }
+
+                    // Check if minimum time has passed
+                    const currentTime = Date.now();
+                    const timeSinceQuestionShown = currentTime - lastAnswerTime;
+
+                    if (timeSinceQuestionShown < minimumQuestionTime) {
+                        // If clicked too quickly, ignore the click
+                        return;
+                    }
+
+                    // Disable all options to prevent multiple clicks
+                    optionsDisabled = true;
+                    isProcessingAnswer = true;
+
+                    // Process the answer
+                    checkAnswer(answer);
+                });
                 optionsElement.appendChild(button);
             });
 
@@ -1329,6 +1360,12 @@
         function checkAnswer(selectedAnswer) {
             const question = questions[currentQuestion];
             const isCorrect = selectedAnswer === question.answer;
+
+            // Disable all option buttons to prevent multiple clicks
+            const optionButtons = optionsElement.querySelectorAll('.option');
+            optionButtons.forEach(button => {
+                button.style.pointerEvents = 'none';
+            });
 
             if (isCorrect) {
                 score++;
@@ -1393,6 +1430,8 @@
 
             setTimeout(() => {
                 currentQuestion++;
+                // Re-enable clicking after the timeout
+                isProcessingAnswer = false;
                 showQuestion();
             }, 1500);
         }
@@ -1408,9 +1447,13 @@
             clearInterval(timerInterval);
             const elapsedTime = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
 
+            // Add a minimum time check - at least 1 second per question
+            const minimumGameTime = questionCount * 1; // 1 second per question minimum
+            const validatedTime = Math.max(elapsedTime, minimumGameTime);
+
             // Bereken scores en update stats
             const percentageScore = Math.round((score / questionCount) * 100);
-            const avgTimePerQuestion = elapsedTime / questionCount;
+            const avgTimePerQuestion = validatedTime / questionCount;
 
             // Update perfect score streak - properly reset when not 100%
             if (percentageScore === 100) {
@@ -1451,7 +1494,7 @@
 
             // Update the result screen
             document.getElementById('finalScore').textContent = `${score}/${questionCount}`;
-            document.getElementById('finalTime').textContent = formatTime(elapsedTime);
+            document.getElementById('finalTime').textContent = formatTime(validatedTime);
             document.getElementById('percentageScore').textContent = `${percentageScore}%`;
             document.getElementById('timeBonus').textContent = timeBonusText;
             document.getElementById('combinedScore').textContent = `${combinedScore}`;
@@ -1483,7 +1526,7 @@
                 tables: tableKey,
                 score: score,
                 totalQuestions: questionCount,
-                time: elapsedTime,
+                time: validatedTime,
                 combinedScore: combinedScore,
                 maxStreak: maxStreak
             };
@@ -1741,9 +1784,13 @@
             // Calculate elapsed time excluding paused time
             const elapsedTime = (Date.now() - startTime - totalPausedTime) / 1000;
 
+            // Apply minimum time per question
+            const minimumGameTime = questionCount * 1; // 1 second per question minimum
+            const validatedTime = Math.max(elapsedTime, minimumGameTime);
+
             // Calculate average time per question using current question count
             // If no questions answered yet, return Infinity to avoid division by zero
-            const avgTimePerQuestion = currentQuestion > 0 ? elapsedTime / (currentQuestion + 1) : Infinity;
+            const avgTimePerQuestion = currentQuestion > 0 ? validatedTime / (currentQuestion + 1) : Infinity;
 
             return {
                 avgTimePerQuestion,
