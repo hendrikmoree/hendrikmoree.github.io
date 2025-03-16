@@ -639,6 +639,24 @@
             }
         }
 
+        @keyframes pulse {
+            from {
+                transform: scale(1);
+            }
+            to {
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 10px rgba(67, 170, 139, 0.5);
+            }
+            to {
+                box-shadow: 0 0 20px rgba(67, 170, 139, 0.8);
+            }
+        }
+
         .view-badges-btn {
             position: absolute;
             top: 2px;
@@ -793,7 +811,10 @@
             <div class="badges-grid" id="badgesGrid">
                 <!-- Badges worden hier dynamisch toegevoegd -->
             </div>
-            <button class="menu-button" onclick="showScreen('selectionScreen')">Terug naar menu</button>
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                <button class="menu-button" onclick="showScreen('selectionScreen')">Terug naar menu</button>
+                <button style="background-color: #ff6b6b;" onclick="resetBadges()">Reset badges</button>
+            </div>
         </div>
 
         <div class="badge-notification" id="badgeNotification">
@@ -856,6 +877,174 @@
                 description: 'Beantwoord van elke tafel minstens één som goed',
                 condition: (stats) => stats.correctTablesPlayed.size >= 10,
                 progress: (stats) => Math.round((stats.correctTablesPlayed.size / 10) * 100)
+            },
+            // Nieuwe badges voor elke tafel
+            TABLE_1_MASTER: {
+                id: 'table-1-master',
+                icon: '1️⃣',
+                title: 'Tafel meester van 1',
+                description: 'Behaal een perfecte score met 20 vragen van de tafel van 1',
+                condition: (stats) => stats.percentageScore === 100 && stats.lastSelectedTables.length === 1 &&
+                                     stats.lastSelectedTables.includes(1) && stats.totalQuestions >= 20,
+                progress: (stats) => {
+                    if (stats.lastSelectedTables.length === 1 && stats.lastSelectedTables.includes(1)) {
+                        return stats.percentageScore;
+                    }
+                    return 0;
+                }
+            },
+            TABLE_2_MASTER: {
+                id: 'table-2-master',
+                icon: '2️⃣',
+                title: 'Tafel meester van 2',
+                description: 'Behaal een perfecte score met 20 vragen van de tafel van 2',
+                condition: (stats) => stats.percentageScore === 100 && stats.lastSelectedTables.length === 1 &&
+                                     stats.lastSelectedTables.includes(2) && stats.totalQuestions >= 20,
+                progress: (stats) => {
+                    if (stats.lastSelectedTables.length === 1 && stats.lastSelectedTables.includes(2)) {
+                        return stats.percentageScore;
+                    }
+                    return 0;
+                }
+            },
+            TABLE_3_MASTER: {
+                id: 'table-3-master',
+                icon: '3️⃣',
+                title: 'Tafel meester van 3',
+                description: 'Behaal een perfecte score met 20 vragen van de tafel van 3',
+                condition: (stats) => stats.percentageScore === 100 && stats.lastSelectedTables.length === 1 &&
+                                     stats.lastSelectedTables.includes(3) && stats.totalQuestions >= 20,
+                progress: (stats) => {
+                    if (stats.lastSelectedTables.length === 1 && stats.lastSelectedTables.includes(3)) {
+                        return stats.percentageScore;
+                    }
+                    return 0;
+                }
+            },
+            TABLE_4_MASTER: {
+                id: 'table-4-master',
+                icon: '4️⃣',
+                title: 'Tafel meester van 4',
+                description: 'Behaal een perfecte score met 20 vragen van de tafel van 4',
+                condition: (stats) => stats.percentageScore === 100 && stats.lastSelectedTables.length === 1 &&
+                                     stats.lastSelectedTables.includes(4) && stats.totalQuestions >= 20,
+                progress: (stats) => {
+                    if (stats.lastSelectedTables.length === 1 && stats.lastSelectedTables.includes(4)) {
+                        return stats.percentageScore;
+                    }
+                    return 0;
+                }
+            },
+            TABLE_5_MASTER: {
+                id: 'table-5-master',
+                icon: '5️⃣',
+                title: 'Tafel meester van 5',
+                description: 'Behaal een perfecte score met 20 vragen van de tafel van 5',
+                condition: (stats) => stats.percentageScore === 100 && stats.lastSelectedTables.length === 1 &&
+                                     stats.lastSelectedTables.includes(5) && stats.totalQuestions >= 20,
+                progress: (stats) => {
+                    if (stats.lastSelectedTables.length === 1 && stats.lastSelectedTables.includes(5)) {
+                        return stats.percentageScore;
+                    }
+                    return 0;
+                }
+            },
+            TABLE_6_MASTER: {
+                id: 'table-6-master',
+                icon: '6️⃣',
+                title: 'Tafel meester van 6',
+                description: 'Behaal een perfecte score met 20 vragen van de tafel van 6',
+                condition: (stats) => stats.percentageScore === 100 && stats.lastSelectedTables.length === 1 &&
+                                     stats.lastSelectedTables.includes(6) && stats.totalQuestions >= 20,
+                progress: (stats) => {
+                    if (stats.lastSelectedTables.length === 1 && stats.lastSelectedTables.includes(6)) {
+                        return stats.percentageScore;
+                    }
+                    return 0;
+                }
+            },
+            TABLE_7_MASTER: {
+                id: 'table-7-master',
+                icon: '7️⃣',
+                title: 'Tafel meester van 7',
+                description: 'Behaal een perfecte score met 20 vragen van de tafel van 7',
+                condition: (stats) => stats.percentageScore === 100 && stats.lastSelectedTables.length === 1 &&
+                                     stats.lastSelectedTables.includes(7) && stats.totalQuestions >= 20,
+                progress: (stats) => {
+                    if (stats.lastSelectedTables.length === 1 && stats.lastSelectedTables.includes(7)) {
+                        return stats.percentageScore;
+                    }
+                    return 0;
+                }
+            },
+            TABLE_8_MASTER: {
+                id: 'table-8-master',
+                icon: '8️⃣',
+                title: 'Tafel meester van 8',
+                description: 'Behaal een perfecte score met 20 vragen van de tafel van 8',
+                condition: (stats) => stats.percentageScore === 100 && stats.lastSelectedTables.length === 1 &&
+                                     stats.lastSelectedTables.includes(8) && stats.totalQuestions >= 20,
+                progress: (stats) => {
+                    if (stats.lastSelectedTables.length === 1 && stats.lastSelectedTables.includes(8)) {
+                        return stats.percentageScore;
+                    }
+                    return 0;
+                }
+            },
+            TABLE_9_MASTER: {
+                id: 'table-9-master',
+                icon: '9️⃣',
+                title: 'Tafel meester van 9',
+                description: 'Behaal een perfecte score met 20 vragen van de tafel van 9',
+                condition: (stats) => stats.percentageScore === 100 && stats.lastSelectedTables.length === 1 &&
+                                     stats.lastSelectedTables.includes(9) && stats.totalQuestions >= 20,
+                progress: (stats) => {
+                    if (stats.lastSelectedTables.length === 1 && stats.lastSelectedTables.includes(9)) {
+                        return stats.percentageScore;
+                    }
+                    return 0;
+                }
+            },
+            TABLE_10_MASTER: {
+                id: 'table-10-master',
+                icon: '🔟',
+                title: 'Tafel meester van 10',
+                description: 'Behaal een perfecte score met 20 vragen van de tafel van 10',
+                condition: (stats) => stats.percentageScore === 100 && stats.lastSelectedTables.length === 1 &&
+                                     stats.lastSelectedTables.includes(10) && stats.totalQuestions >= 20,
+                progress: (stats) => {
+                    if (stats.lastSelectedTables.length === 1 && stats.lastSelectedTables.includes(10)) {
+                        return stats.percentageScore;
+                    }
+                    return 0;
+                }
+            },
+            TABLES_CHAMPION: {
+                id: 'tables-champion',
+                icon: '👑',
+                title: 'Tafels Kampioen',
+                description: 'Behaal alle 10 tafel-badges',
+                condition: (stats) => {
+                    return earnedBadges['table-1-master'] && earnedBadges['table-2-master'] &&
+                           earnedBadges['table-3-master'] && earnedBadges['table-4-master'] &&
+                           earnedBadges['table-5-master'] && earnedBadges['table-6-master'] &&
+                           earnedBadges['table-7-master'] && earnedBadges['table-8-master'] &&
+                           earnedBadges['table-9-master'] && earnedBadges['table-10-master'];
+                },
+                progress: (stats) => {
+                    let count = 0;
+                    if (earnedBadges['table-1-master']) count++;
+                    if (earnedBadges['table-2-master']) count++;
+                    if (earnedBadges['table-3-master']) count++;
+                    if (earnedBadges['table-4-master']) count++;
+                    if (earnedBadges['table-5-master']) count++;
+                    if (earnedBadges['table-6-master']) count++;
+                    if (earnedBadges['table-7-master']) count++;
+                    if (earnedBadges['table-8-master']) count++;
+                    if (earnedBadges['table-9-master']) count++;
+                    if (earnedBadges['table-10-master']) count++;
+                    return Math.round((count / 10) * 100);
+                }
             },
             DEDICATION: {
                 id: 'dedication',
@@ -1776,11 +1965,41 @@
 
                 const badgeElement = document.createElement('div');
                 badgeElement.className = `badge ${isEarned ? '' : 'locked'}`;
-                badgeElement.innerHTML = `
-                    <div class="badge-icon">${badge.icon}</div>
-                    <div class="badge-title">${badge.title}</div>
-                    <div class="badge-description">${badge.description}</div>
-                `;
+
+                // Verwijder de voortgangsbalk code
+                // const progressBar = document.createElement('div');
+                // progressBar.style.width = '100%';
+                // progressBar.style.height = '8px';
+                // progressBar.style.backgroundColor = '#eee';
+                // progressBar.style.borderRadius = '4px';
+                // progressBar.style.marginTop = '8px';
+
+                // const progressFill = document.createElement('div');
+                // progressFill.style.width = progress + '%';
+                // progressFill.style.height = '100%';
+                // progressFill.style.backgroundColor = isEarned ? '#43aa8b' : '#ff9a3c';
+                // progressFill.style.borderRadius = '4px';
+
+                // progressBar.appendChild(progressFill);
+
+                const iconDiv = document.createElement('div');
+                iconDiv.className = 'badge-icon';
+                iconDiv.textContent = badge.icon;
+
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'badge-title';
+                titleDiv.textContent = badge.title;
+
+                const descDiv = document.createElement('div');
+                descDiv.className = 'badge-description';
+                descDiv.textContent = badge.description;
+
+                badgeElement.appendChild(iconDiv);
+                badgeElement.appendChild(titleDiv);
+                badgeElement.appendChild(descDiv);
+                // Verwijder de voortgangsbalk uit de badge
+                // badgeElement.appendChild(progressBar);
+
                 badgesGrid.appendChild(badgeElement);
             });
         }
@@ -1788,15 +2007,24 @@
         function showBadgeNotification(badge) {
             const notification = document.getElementById('badgeNotification');
             notification.innerHTML = `
-                <div style="font-size: 2em">${badge.icon}</div>
-                <div><strong>Nieuwe badge ontgrendeld!</strong></div>
-                <div>${badge.title}</div>
+                <div style="font-size: 3em; animation: pulse 1s infinite alternate;">${badge.icon}</div>
+                <div style="font-weight: bold; font-size: 1.2em; margin: 5px 0;">Nieuwe badge ontgrendeld!</div>
+                <div style="font-size: 1.1em; margin-bottom: 5px;">${badge.title}</div>
+                <div style="font-size: 0.9em; color: #666;">${badge.description}</div>
             `;
             notification.style.display = 'block';
 
+            // Voeg een animatie toe aan de notificatie
+            notification.style.animation = 'slideUp 0.5s ease-out, glow 2s infinite alternate';
+
+            // Voeg een confetti-effect toe als het een speciale badge is
+            if (badge.id === 'tables-champion') {
+                createConfetti();
+            }
+
             setTimeout(() => {
                 notification.style.display = 'none';
-            }, 3000);
+            }, 5000); // Toon de notificatie langer (5 seconden)
         }
 
         function calculateCurrentStats() {
