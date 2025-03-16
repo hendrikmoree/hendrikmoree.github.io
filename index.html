@@ -820,7 +820,7 @@
         // Add variables for click prevention
         let isProcessingAnswer = false;
         let lastAnswerTime = 0;
-        let minimumQuestionTime = 1000; // Minimum time in ms between answers (1 second)
+        let minimumQuestionTime = 300; // Verlaagd van 1000ms naar 300ms
         let optionsDisabled = false;
 
         // Badge systeem
@@ -1262,7 +1262,12 @@
             // Reset the answer processing flag
             isProcessingAnswer = false;
             optionsDisabled = false;
-            lastAnswerTime = Date.now();
+
+            // Zorg ervoor dat de lastAnswerTime wordt ingesteld nadat de vraag volledig is weergegeven
+            setTimeout(() => {
+                lastAnswerTime = Date.now();
+                console.log('Vraag is klaar voor antwoord, timer gereset');
+            }, 100);
 
             // Ensure pause button is visible if game is not paused
             if (!isPaused) {
@@ -1336,6 +1341,7 @@
                 button.addEventListener('click', () => {
                     // Prevent rapid clicking and multiple submissions
                     if (isProcessingAnswer || optionsDisabled) {
+                        console.log('Klik genegeerd: antwoord wordt al verwerkt of opties zijn uitgeschakeld');
                         return;
                     }
 
@@ -1345,8 +1351,15 @@
 
                     if (timeSinceQuestionShown < minimumQuestionTime) {
                         // If clicked too quickly, ignore the click
+                        console.log(`Klik te snel: ${timeSinceQuestionShown}ms sinds vraag getoond, minimum is ${minimumQuestionTime}ms`);
                         return;
                     }
+
+                    // Zorg ervoor dat we direct feedback geven dat de klik is geregistreerd
+                    button.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        button.style.transform = 'scale(1)';
+                    }, 100);
 
                     // Disable all options to prevent multiple clicks
                     optionsDisabled = true;
@@ -1438,10 +1451,15 @@
 
             updateStars();
 
+            // Zorg ervoor dat we de volgende vraag tonen na een vertraging
             setTimeout(() => {
                 currentQuestion++;
-                // Re-enable clicking after the timeout
+
+                // Zorg ervoor dat alle vlaggen correct worden gereset
                 isProcessingAnswer = false;
+                optionsDisabled = false;
+
+                // Toon de volgende vraag
                 showQuestion();
             }, 1500);
         }
