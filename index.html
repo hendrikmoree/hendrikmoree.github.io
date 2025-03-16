@@ -1190,6 +1190,7 @@
 
             selectionScreen.style.display = 'none';
             gameScreen.style.display = 'block';
+            pauseButton.style.display = 'flex'; // Ensure pause button is visible when starting a game
 
             currentQuestion = 0;
             score = 0;
@@ -1258,6 +1259,11 @@
             isProcessingAnswer = false;
             optionsDisabled = false;
             lastAnswerTime = Date.now();
+
+            // Ensure pause button is visible if game is not paused
+            if (!isPaused) {
+                pauseButton.style.display = 'flex';
+            }
 
             const question = questions[currentQuestion];
 
@@ -1445,6 +1451,12 @@
 
         function endGame() {
             clearInterval(timerInterval);
+
+            // Reset pause button state
+            isPaused = false;
+            pauseButton.style.display = 'flex';
+            pauseMenu.style.display = 'none';
+
             const elapsedTime = Math.floor((Date.now() - startTime - totalPausedTime) / 1000);
 
             // Add a minimum time check - at least 1 second per question
