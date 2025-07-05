@@ -280,7 +280,11 @@
                 <button class="menu-button" onclick="initializeAudio()" style="background: linear-gradient(45deg, #fd79a8, #e84393);">
                     🔊 Geluid aanzetten
                 </button>
+                <button class="menu-button" onclick="debugAudio()" style="background: linear-gradient(45deg, #74b9ff, #0984e3); font-size: 0.9em;">
+                    🔍 Audio Debug
+                </button>
                 <div id="audio-status" style="margin-top: 10px; font-size: 0.9em; color: #666;"></div>
+                <div id="debug-info" style="margin-top: 10px; font-size: 0.8em; color: #333; max-height: 200px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 5px; display: none;"></div>
             </div>
             <button class="menu-button" onclick="startAlphabetGame()">
                 🔤 Letters leren
@@ -392,44 +396,246 @@
         let currentWordInput = [];
         let targetLetter = '';
 
-        // Initialize audio system
+        // Initialize audio system with multiple fallbacks
         function initializeAudio() {
+            debugLog('=== Audio Initialization Started ===');
+
+            // Try multiple approaches
+            tryWebSpeechAPI();
+        }
+
+        function tryWebSpeechAPI() {
+            debugLog('🔍 Trying Web Speech API...');
+
             if (!('speechSynthesis' in window)) {
-                document.getElementById('audio-status').textContent = '❌ Geluid niet ondersteund door deze browser';
+                debugLog('❌ Web Speech API not supported');
+                tryAlternativeAPI();
                 return;
             }
 
-            // Load voices
-            loadVoices();
+            debugLog('✅ Web Speech API available');
 
-            // Test audio with user interaction
+            // Force load voices
+            loadVoicesWithRetry();
+        }
+
+        function loadVoicesWithRetry() {
+            let attempts = 0;
+            const maxAttempts = 10;
+
+            function tryLoadVoices() {
+                attempts++;
+                debugLog(`🔄 Loading voices attempt ${attempts}/${maxAttempts}`);
+
+                const voices = speechSynthesis.getVoices();
+                debugLog(`📊 Found ${voices.length} voices`);
+
+                if (voices.length > 0) {
+                    availableVoices = voices;
+                    voicesLoaded = true;
+                    debugLog('✅ Voices loaded successfully');
+                    testWebSpeechAPI();
+                } else if (attempts < maxAttempts) {
+                    // Try again after a delay
+                    setTimeout(tryLoadVoices, 200);
+                } else {
+                    debugLog('❌ Failed to load voices after multiple attempts');
+                    tryAlternativeAPI();
+                }
+            }
+
+            // Set up voice change listener
+            speechSynthesis.onvoiceschanged = function() {
+                debugLog('🔄 Voices changed event fired');
+                const voices = speechSynthesis.getVoices();
+                if (voices.length > 0) {
+                    availableVoices = voices;
+                    voicesLoaded = true;
+                    debugLog('✅ Voices loaded via event');
+                    testWebSpeechAPI();
+                }
+            };
+
+            // Start trying to load voices
+            tryLoadVoices();
+        }
+
+        function testWebSpeechAPI() {
+            debugLog('🎵 Testing Web Speech API...');
+
             const testUtterance = new SpeechSynthesisUtterance('Test');
-            testUtterance.volume = 0.1;
+            testUtterance.volume = 0.5;
+            testUtterance.rate = 0.8;
+            testUtterance.pitch = 1.0;
+
+            // Find best voice
+            const bestVoice = findBestVoice();
+            if (bestVoice) {
+                testUtterance.voice = bestVoice;
+                debugLog(`🎤 Using voice: ${bestVoice.name} (${bestVoice.lang})`);
+            } else {
+                testUtterance.lang = 'nl-NL';
+                debugLog('🎤 Using default language: nl-NL');
+            }
+
             testUtterance.onstart = function() {
                 audioInitialized = true;
-                document.getElementById('audio-status').textContent = '✅ Geluid werkt!';
-                document.getElementById('audio-init').style.display = 'none';
-            };
-            testUtterance.onerror = function(event) {
-                console.error('Speech synthesis error:', event);
-                document.getElementById('audio-status').textContent = '❌ Geluid werkt niet op dit apparaat';
+                const msg = '✅ Geluid werkt!';
+                document.getElementById('audio-status').textContent = msg;
+                debugLog(msg);
             };
 
-            speechSynthesis.speak(testUtterance);
+            testUtterance.onend = function() {
+                debugLog('✅ Test audio completed');
+            };
+
+            testUtterance.onerror = function(event) {
+                debugLog(`❌ Web Speech API error: ${event.error}`);
+                tryAlternativeAPI();
+            };
+
+            try {
+                speechSynthesis.speak(testUtterance);
+                debugLog('📤 Test utterance sent to speechSynthesis');
+            } catch (error) {
+                debugLog(`❌ Error speaking: ${error.message}`);
+                tryAlternativeAPI();
+            }
+        }
+
+        function tryAlternativeAPI() {
+            debugLog('🔄 Trying alternative TTS solution...');
+
+            // Use a different free TTS API
+            testVoiceRSSAPI();
+        }
+
+        function testVoiceRSSAPI() {
+            debugLog('🎵 Testing VoiceRSS API...');
+
+            const testText = 'Test geluid';
+            const audioUrl = `https://api.voicerss.org/?key=demo&hl=nl-nl&c=MP3&f=44khz_16bit_stereo&src=${encodeURIComponent(testText)}`;
+
+            const audio = new Audio(audioUrl);
+
+            audio.oncanplaythrough = function() {
+                debugLog('✅ VoiceRSS API audio ready');
+                audio.play().then(() => {
+                    audioInitialized = true;
+                    const msg = '✅ Geluid werkt met VoiceRSS!';
+                    document.getElementById('audio-status').textContent = msg;
+                    debugLog(msg);
+                }).catch(error => {
+                    debugLog(`❌ VoiceRSS playback error: ${error.message}`);
+                    trySimpleBeep();
+                });
+            };
+
+            audio.onerror = function(error) {
+                debugLog(`❌ VoiceRSS API error: ${error.message || 'Unknown error'}`);
+                trySimpleBeep();
+            };
+
+            // Load the audio
+            audio.load();
+        }
+
+        function trySimpleBeep() {
+            debugLog('🔔 Trying simple beep as last resort...');
+
+            try {
+                // Create a simple beep sound using Web Audio API
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+
+                audioInitialized = true;
+                const msg = '✅ Audio werkt (alleen pieptonen)';
+                document.getElementById('audio-status').textContent = msg;
+                debugLog(msg);
+
+            } catch (error) {
+                debugLog(`❌ Even beep failed: ${error.message}`);
+                const msg = '❌ Audio werkt niet op dit apparaat';
+                document.getElementById('audio-status').textContent = msg;
+                debugLog(msg);
+            }
+        }
+
+        function debugAudio() {
+            const debugDiv = document.getElementById('debug-info');
+            debugDiv.style.display = 'block';
+            debugDiv.innerHTML = '<strong>🔍 Audio Debug Informatie:</strong><br><br>';
+
+            // Browser info
+            debugDiv.innerHTML += `<strong>Browser:</strong> ${navigator.userAgent}<br><br>`;
+
+            // Check all audio capabilities
+            debugDiv.innerHTML += '<strong>Audio Capabilities:</strong><br>';
+            debugDiv.innerHTML += `speechSynthesis: ${'speechSynthesis' in window ? '✅' : '❌'}<br>`;
+            debugDiv.innerHTML += `AudioContext: ${(window.AudioContext || window.webkitAudioContext) ? '✅' : '❌'}<br>`;
+            debugDiv.innerHTML += `HTML5 Audio: ${typeof Audio !== 'undefined' ? '✅' : '❌'}<br><br>`;
+
+            // Web Speech API info
+            if ('speechSynthesis' in window) {
+                const voices = speechSynthesis.getVoices();
+                debugDiv.innerHTML += `<strong>Web Speech API Voices:</strong> ${voices.length}<br>`;
+
+                if (voices.length > 0) {
+                    const dutchVoices = voices.filter(v => v.lang.startsWith('nl'));
+                    debugDiv.innerHTML += `Nederlandse voices: ${dutchVoices.length}<br>`;
+
+                    voices.slice(0, 5).forEach((voice, index) => {
+                        debugDiv.innerHTML += `${index + 1}. ${voice.name} (${voice.lang})<br>`;
+                    });
+
+                    if (voices.length > 5) {
+                        debugDiv.innerHTML += `... en ${voices.length - 5} meer<br>`;
+                    }
+                }
+            }
+
+            debugDiv.innerHTML += '<br><button onclick="forceReloadVoices()" style="padding: 5px 10px; margin: 5px;">🔄 Herlaad Voices</button>';
+            debugDiv.innerHTML += '<button onclick="testAllMethods()" style="padding: 5px 10px; margin: 5px;">🎵 Test Alle Methoden</button>';
+        }
+
+        function forceReloadVoices() {
+            debugLog('🔄 Force reloading voices...');
+            speechSynthesis.cancel();
+            loadVoicesWithRetry();
+        }
+
+        function testAllMethods() {
+            debugLog('🎵 Testing all audio methods...');
+
+            setTimeout(() => testWebSpeechAPI(), 500);
+            setTimeout(() => testVoiceRSSAPI(), 2000);
+            setTimeout(() => trySimpleBeep(), 4000);
+        }
+
+        function debugLog(message) {
+            console.log('[Audio Debug]', message);
+            const debugDiv = document.getElementById('debug-info');
+            if (debugDiv && debugDiv.style.display !== 'none') {
+                debugDiv.innerHTML += message + '<br>';
+                debugDiv.scrollTop = debugDiv.scrollHeight;
+            }
         }
 
         function loadVoices() {
-            availableVoices = speechSynthesis.getVoices();
-
-            if (availableVoices.length === 0) {
-                // Voices not loaded yet, wait for them
-                speechSynthesis.onvoiceschanged = function() {
-                    availableVoices = speechSynthesis.getVoices();
-                    voicesLoaded = true;
-                };
-            } else {
-                voicesLoaded = true;
-            }
+            // This is now handled by loadVoicesWithRetry
         }
 
         function findBestVoice() {
@@ -455,7 +661,7 @@
                 return englishVoice;
             }
 
-            // Use default voice
+            // Use first available voice
             return availableVoices[0];
         }
 
@@ -465,13 +671,16 @@
                 return;
             }
 
-            if (!('speechSynthesis' in window)) {
-                console.log('Speech synthesis not supported');
-                return;
+            // Try different methods based on what worked during initialization
+            if ('speechSynthesis' in window && voicesLoaded) {
+                playSoundWithWebSpeech(text);
+            } else {
+                playSoundWithAPI(text);
             }
+        }
 
+        function playSoundWithWebSpeech(text) {
             try {
-                // Cancel any ongoing speech
                 speechSynthesis.cancel();
 
                 const utterance = new SpeechSynthesisUtterance(text);
@@ -488,13 +697,25 @@
                 utterance.pitch = 1.0;
                 utterance.volume = 0.8;
 
-                utterance.onerror = function(event) {
-                    console.error('Speech error:', event);
-                };
-
                 speechSynthesis.speak(utterance);
             } catch (error) {
-                console.error('Error playing sound:', error);
+                console.error('Error with Web Speech:', error);
+                playSoundWithAPI(text);
+            }
+        }
+
+        function playSoundWithAPI(text) {
+            try {
+                const audioUrl = `https://api.voicerss.org/?key=demo&hl=nl-nl&c=MP3&f=44khz_16bit_stereo&src=${encodeURIComponent(text)}`;
+                const audio = new Audio(audioUrl);
+
+                audio.play().catch(error => {
+                    console.error('Error playing API audio:', error);
+                    // Last resort: just log the text
+                    console.log('Would say:', text);
+                });
+            } catch (error) {
+                console.error('Error with API audio:', error);
             }
         }
 
@@ -769,4 +990,5 @@
         });
     </script>
 </body>
+</html>
 </html>
