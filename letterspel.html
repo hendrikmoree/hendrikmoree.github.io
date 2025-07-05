@@ -276,6 +276,12 @@
         <h1>🌟 Letterspel voor groep 2 🌟</h1>
 
         <div id="main-menu" class="menu">
+            <div id="audio-init" style="margin-bottom: 20px;">
+                <button class="menu-button" onclick="initializeAudio()" style="background: linear-gradient(45deg, #fd79a8, #e84393);">
+                    🔊 Geluid aanzetten
+                </button>
+                <div id="audio-status" style="margin-top: 10px; font-size: 0.9em; color: #666;"></div>
+            </div>
             <button class="menu-button" onclick="startAlphabetGame()">
                 🔤 Letters leren
             </button>
@@ -319,6 +325,9 @@
     <script>
         // Game state
         let currentGame = null;
+        let audioInitialized = false;
+        let voicesLoaded = false;
+        let availableVoices = [];
         let scores = {
             alphabet: 0,
             word: 0,
@@ -349,7 +358,7 @@
             { word: 'pen', emoji: '🖊️', sound: 'pen' },
             { word: 'tas', emoji: '🎒', sound: 'tas' },
             { word: 'pet', emoji: '🧢', sound: 'pet' },
-            { word: 'sok', emoji: '🧦', sound: 'sok' },
+            { word: 'sok', emoji: '��', sound: 'sok' },
             { word: 'bril', emoji: '👓', sound: 'bril' },
             { word: 'kam', emoji: '🪮', sound: 'kam' },
             { word: 'zeep', emoji: '🧼', sound: 'zeep' },
@@ -383,6 +392,112 @@
         let currentWordInput = [];
         let targetLetter = '';
 
+        // Initialize audio system
+        function initializeAudio() {
+            if (!('speechSynthesis' in window)) {
+                document.getElementById('audio-status').textContent = '❌ Geluid niet ondersteund door deze browser';
+                return;
+            }
+
+            // Load voices
+            loadVoices();
+
+            // Test audio with user interaction
+            const testUtterance = new SpeechSynthesisUtterance('Test');
+            testUtterance.volume = 0.1;
+            testUtterance.onstart = function() {
+                audioInitialized = true;
+                document.getElementById('audio-status').textContent = '✅ Geluid werkt!';
+                document.getElementById('audio-init').style.display = 'none';
+            };
+            testUtterance.onerror = function(event) {
+                console.error('Speech synthesis error:', event);
+                document.getElementById('audio-status').textContent = '❌ Geluid werkt niet op dit apparaat';
+            };
+
+            speechSynthesis.speak(testUtterance);
+        }
+
+        function loadVoices() {
+            availableVoices = speechSynthesis.getVoices();
+
+            if (availableVoices.length === 0) {
+                // Voices not loaded yet, wait for them
+                speechSynthesis.onvoiceschanged = function() {
+                    availableVoices = speechSynthesis.getVoices();
+                    voicesLoaded = true;
+                };
+            } else {
+                voicesLoaded = true;
+            }
+        }
+
+        function findBestVoice() {
+            if (!voicesLoaded || availableVoices.length === 0) {
+                return null;
+            }
+
+            // Try to find Dutch voice first
+            let dutchVoice = availableVoices.find(voice =>
+                voice.lang.startsWith('nl') || voice.lang.startsWith('nl-')
+            );
+
+            if (dutchVoice) {
+                return dutchVoice;
+            }
+
+            // Fallback to English
+            let englishVoice = availableVoices.find(voice =>
+                voice.lang.startsWith('en') || voice.lang.startsWith('en-')
+            );
+
+            if (englishVoice) {
+                return englishVoice;
+            }
+
+            // Use default voice
+            return availableVoices[0];
+        }
+
+        function playSound(text) {
+            if (!audioInitialized) {
+                console.log('Audio not initialized, skipping sound:', text);
+                return;
+            }
+
+            if (!('speechSynthesis' in window)) {
+                console.log('Speech synthesis not supported');
+                return;
+            }
+
+            try {
+                // Cancel any ongoing speech
+                speechSynthesis.cancel();
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                const bestVoice = findBestVoice();
+
+                if (bestVoice) {
+                    utterance.voice = bestVoice;
+                    utterance.lang = bestVoice.lang;
+                } else {
+                    utterance.lang = 'nl-NL';
+                }
+
+                utterance.rate = 0.8;
+                utterance.pitch = 1.0;
+                utterance.volume = 0.8;
+
+                utterance.onerror = function(event) {
+                    console.error('Speech error:', event);
+                };
+
+                speechSynthesis.speak(utterance);
+            } catch (error) {
+                console.error('Error playing sound:', error);
+            }
+        }
+
         // Utility functions
         function shuffle(array) {
             const shuffled = [...array];
@@ -391,16 +506,6 @@
                 [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
             }
             return shuffled;
-        }
-
-        function playSound(text) {
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'nl-NL';
-                utterance.rate = 0.8;
-                utterance.pitch = 1.2;
-                speechSynthesis.speak(utterance);
-            }
         }
 
         function celebrate() {
@@ -656,7 +761,11 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            // playSound('Welkom bij het letterspel!');
+            // Load voices immediately when page loads
+            loadVoices();
+
+            // Show audio initialization button
+            document.getElementById('audio-status').textContent = 'Klik op "Geluid aanzetten" om het spel met geluid te spelen';
         });
     </script>
 </body>
