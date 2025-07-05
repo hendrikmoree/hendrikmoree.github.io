@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Letterspel voor groep 2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 800px;
+            width: 100%;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #ff6b6b;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .menu {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .menu-button {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 20px 30px;
+            border-radius: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .menu-button:hover {
+            transform: translateY(-3px);
+        }
+
+        .game-area {
+            display: none;
+            min-height: 400px;
+        }
+
+        .game-area.active {
+            display: block;
+        }
+
+        .letter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .letter-card {
+            background: linear-gradient(45deg, #ffeaa7, #fab1a0);
+            border: 3px solid #e17055;
+            border-radius: 15px;
+            padding: 20px;
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #2d3436;
+        }
+
+        .letter-card:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .letter-card.correct {
+            background: linear-gradient(45deg, #00b894, #00cec9);
+            animation: bounce 0.6s;
+        }
+
+        .word-game {
+            text-align: center;
+        }
+
+        .word-display {
+            font-size: 3em;
+            color: #2d3436;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .word-input {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .letter-slot {
+            width: 60px;
+            height: 60px;
+            border: 3px dashed #74b9ff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: bold;
+            background: #f8f9fa;
+        }
+
+        .letter-slot.filled {
+            background: #74b9ff;
+            color: white;
+            border-style: solid;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .letter-slot.filled:hover {
+            background: #fd79a8;
+            transform: scale(1.1);
+        }
+
+        .letter-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .letter-option {
+            background: linear-gradient(45deg, #a29bfe, #6c5ce7);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .letter-option:hover {
+            transform: scale(1.1);
+        }
+
+        .letter-option.used {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .back-button {
+            background: linear-gradient(45deg, #fd79a8, #e84393);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .score {
+            font-size: 1.5em;
+            color: #00b894;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .celebration {
+            font-size: 2em;
+            color: #00b894;
+            margin: 20px 0;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .alphabet-game {
+            text-align: center;
+        }
+
+        .current-letter {
+            font-size: 8em;
+            color: #e17055;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+        }
+
+        .letter-sound {
+            background: linear-gradient(45deg, #fd79a8, #fdcb6e);
+            color: white;
+            border: none;
+            padding: 20px 30px;
+            border-radius: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s;
+        }
+
+        .letter-sound:hover {
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .menu-button {
+                padding: 15px 20px;
+                font-size: 1em;
+            }
+
+            .current-letter {
+                font-size: 6em;
+            }
+
+            .letter-card {
+                padding: 15px;
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🌟 Letterspel voor groep 2 🌟</h1>
+
+        <div id="main-menu" class="menu">
+            <button class="menu-button" onclick="startAlphabetGame()">
+                🔤 Letters leren
+            </button>
+            <button class="menu-button" onclick="startWordGame()">
+                📖 Woordjes lezen
+            </button>
+            <button class="menu-button" onclick="startLetterRecognition()">
+                🎯 Letters zoeken
+            </button>
+        </div>
+
+        <!-- Alfabet spel -->
+        <div id="alphabet-game" class="game-area alphabet-game">
+            <h2>Welke letter is dit?</h2>
+            <div class="current-letter" id="current-letter">A</div>
+            <button class="letter-sound" onclick="playLetterSound()">🔊 Hoe klinkt deze letter?</button>
+            <div class="letter-options" id="alphabet-options"></div>
+            <div class="score" id="alphabet-score">Score: 0</div>
+            <button class="back-button" onclick="goToMenu()">← Terug naar menu</button>
+        </div>
+
+        <!-- Woord spel -->
+        <div id="word-game" class="game-area word-game">
+            <h2>Maak het woord!</h2>
+            <div class="word-display" id="word-display">🐱</div>
+            <div class="word-input" id="word-input"></div>
+            <div class="letter-options" id="word-options"></div>
+            <div class="score" id="word-score">Score: 0</div>
+            <button class="back-button" onclick="goToMenu()">← Terug naar menu</button>
+        </div>
+
+        <!-- Letter herkenning spel -->
+        <div id="letter-recognition" class="game-area">
+            <h2>Zoek de letter: <span id="target-letter">A</span></h2>
+            <div class="letter-grid" id="letter-grid"></div>
+            <div class="score" id="recognition-score">Score: 0</div>
+            <button class="back-button" onclick="goToMenu()">← Terug naar menu</button>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let currentGame = null;
+        let scores = {
+            alphabet: 0,
+            word: 0,
+            recognition: 0
+        };
+
+        // Data
+        const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
+        const words = [
+            { word: 'kat', emoji: '🐱', sound: 'kat' },
+            { word: 'hond', emoji: '🐶', sound: 'hond' },
+            { word: 'boom', emoji: '🌳', sound: 'boom' },
+            { word: 'boot', emoji: '⛵', sound: 'boot' },
+            { word: 'boek', emoji: '📚', sound: 'boek' },
+            { word: 'bal', emoji: '⚽', sound: 'bal' },
+            { word: 'vis', emoji: '🐟', sound: 'vis' },
+            { word: 'pop', emoji: '🪆', sound: 'pop' },
+            { word: 'bed', emoji: '🛏️', sound: 'bed' },
+            { word: 'zon', emoji: '☀️', sound: 'zon' }
+        ];
+
+        // Letter sounds (Nederlandse letterklanken)
+        const letterSounds = {
+            'a': 'ah', 'b': 'buh', 'c': 'c', 'd': 'd', 'e': 'eh',
+            'f': 'ef', 'g': 'g', 'h': 'hah', 'i': 'ie', 'j': 'jee',
+            'k': 'ka', 'l': 'el', 'm': 'em', 'n': 'en', 'o': 'oh',
+            'p': 'pee', 'q': 'kuu', 'r': 'rr', 's': 'es', 't': 'tee',
+            'u': 'uu', 'v': 'vee', 'w': 'wee', 'x': 'iks', 'y': 'griekse ei',
+            'z': 'zet'
+        };
+
+        // Current game variables
+        let currentLetter = '';
+        let currentWord = null;
+        let currentWordInput = [];
+        let targetLetter = '';
+
+        // Utility functions
+        function shuffle(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function playSound(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'nl-NL';
+                utterance.rate = 0.8;
+                utterance.pitch = 1.2;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        function celebrate() {
+            const celebration = document.createElement('div');
+            celebration.className = 'celebration';
+            celebration.innerHTML = '🎉 Goed gedaan! 🎉';
+            document.querySelector('.game-area.active').appendChild(celebration);
+
+            setTimeout(() => {
+                celebration.remove();
+            }, 2000);
+
+            playSound('Goed gedaan!');
+        }
+
+        // Menu functions
+        function goToMenu() {
+            document.querySelectorAll('.game-area').forEach(area => {
+                area.classList.remove('active');
+            });
+            document.getElementById('main-menu').style.display = 'flex';
+        }
+
+        function startGame(gameId) {
+            document.getElementById('main-menu').style.display = 'none';
+            document.querySelectorAll('.game-area').forEach(area => {
+                area.classList.remove('active');
+            });
+            document.getElementById(gameId).classList.add('active');
+        }
+
+        // Alphabet game
+        function startAlphabetGame() {
+            currentGame = 'alphabet';
+            startGame('alphabet-game');
+            nextAlphabetQuestion();
+        }
+
+        function nextAlphabetQuestion() {
+            currentLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
+            document.getElementById('current-letter').textContent = currentLetter;
+
+            // Create options
+            const options = [currentLetter];
+            while (options.length < 4) {
+                const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
+                if (!options.includes(randomLetter)) {
+                    options.push(randomLetter);
+                }
+            }
+
+            const shuffledOptions = shuffle(options);
+            const optionsContainer = document.getElementById('alphabet-options');
+            optionsContainer.innerHTML = '';
+
+            shuffledOptions.forEach(letter => {
+                const button = document.createElement('button');
+                button.className = 'letter-option';
+                button.textContent = letter;
+                button.onclick = () => checkAlphabetAnswer(letter);
+                optionsContainer.appendChild(button);
+            });
+
+            playSound(`Welke letter is dit?`);
+        }
+
+        function checkAlphabetAnswer(selectedLetter) {
+            if (selectedLetter === currentLetter) {
+                scores.alphabet++;
+                document.getElementById('alphabet-score').textContent = `Score: ${scores.alphabet}`;
+                celebrate();
+                setTimeout(nextAlphabetQuestion, 2000);
+            } else {
+                playSound('Probeer het nog eens!');
+                // Highlight correct answer
+                document.querySelectorAll('#alphabet-options .letter-option').forEach(btn => {
+                    if (btn.textContent === currentLetter) {
+                        btn.style.background = 'linear-gradient(45deg, #00b894, #00cec9)';
+                    }
+                });
+            }
+        }
+
+        function playLetterSound() {
+            playSound(letterSounds[currentLetter]);
+        }
+
+        // Word game
+        function startWordGame() {
+            currentGame = 'word';
+            startGame('word-game');
+            nextWordQuestion();
+        }
+
+        function nextWordQuestion() {
+            currentWord = words[Math.floor(Math.random() * words.length)];
+            currentWordInput = new Array(currentWord.word.length).fill('');
+
+            document.getElementById('word-display').textContent = currentWord.emoji;
+
+            // Create input slots
+            const inputContainer = document.getElementById('word-input');
+            inputContainer.innerHTML = '';
+
+            currentWord.word.split('').forEach((letter, index) => {
+                const slot = document.createElement('div');
+                slot.className = 'letter-slot';
+                slot.id = `slot-${index}`;
+                inputContainer.appendChild(slot);
+            });
+
+            // Create letter options
+            const wordLetters = currentWord.word.split('');
+            const extraLetters = [];
+
+            // Add some random letters
+            while (extraLetters.length < 3) {
+                const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
+                if (!wordLetters.includes(randomLetter) && !extraLetters.includes(randomLetter)) {
+                    extraLetters.push(randomLetter);
+                }
+            }
+
+            const allOptions = shuffle([...wordLetters, ...extraLetters]);
+            const optionsContainer = document.getElementById('word-options');
+            optionsContainer.innerHTML = '';
+
+            allOptions.forEach(letter => {
+                const button = document.createElement('button');
+                button.className = 'letter-option';
+                button.textContent = letter;
+                button.onclick = () => selectWordLetter(letter, button);
+                optionsContainer.appendChild(button);
+            });
+
+            playSound(`Maak het woord voor ${currentWord.sound}`);
+        }
+
+                function selectWordLetter(letter, button) {
+            if (button.classList.contains('used')) return;
+
+            // Find next empty slot
+            const emptySlotIndex = currentWordInput.findIndex(slot => slot === '');
+            if (emptySlotIndex === -1) return;
+
+            currentWordInput[emptySlotIndex] = letter;
+            const slotElement = document.getElementById(`slot-${emptySlotIndex}`);
+            slotElement.textContent = letter;
+            slotElement.classList.add('filled');
+
+            // Maak slot klikbaar om letter weg te halen
+            slotElement.onclick = () => removeWordLetter(emptySlotIndex, button);
+
+            button.classList.add('used');
+
+            // Check if word is complete
+            if (!currentWordInput.includes('')) {
+                checkWordAnswer();
+            }
+        }
+
+        function removeWordLetter(slotIndex, originalButton) {
+            // Verwijder letter uit slot
+            currentWordInput[slotIndex] = '';
+            const slotElement = document.getElementById(`slot-${slotIndex}`);
+            slotElement.textContent = '';
+            slotElement.classList.remove('filled');
+            slotElement.onclick = null;
+
+            // Maak de letter button weer beschikbaar
+            originalButton.classList.remove('used');
+        }
+
+                function checkWordAnswer() {
+            const userWord = currentWordInput.join('');
+            if (userWord === currentWord.word) {
+                scores.word++;
+                document.getElementById('word-score').textContent = `Score: ${scores.word}`;
+                celebrate();
+                setTimeout(nextWordQuestion, 2000);
+            } else {
+                // Geef specifieke feedback
+                if (userWord.length < currentWord.word.length) {
+                    playSound(`Je woord is te kort! Het woord ${currentWord.sound} heeft ${currentWord.word.length} letters. Probeer nog eens!`);
+                } else {
+                    // Zelfde lengte maar verkeerde letters
+                    playSound(`Bijna goed! Maar dit is niet het woord ${currentWord.sound}. Kijk nog eens goed naar het plaatje en probeer opnieuw!`);
+                }
+
+                // Reset the word
+                setTimeout(() => {
+                    currentWordInput = new Array(currentWord.word.length).fill('');
+                    document.querySelectorAll('.letter-slot').forEach(slot => {
+                        slot.textContent = '';
+                        slot.classList.remove('filled');
+                        slot.onclick = null;
+                    });
+                    document.querySelectorAll('.letter-option').forEach(btn => {
+                        btn.classList.remove('used');
+                    });
+                }, 2500);
+            }
+        }
+
+        // Letter recognition game
+        function startLetterRecognition() {
+            currentGame = 'recognition';
+            startGame('letter-recognition');
+            nextRecognitionQuestion();
+        }
+
+        function nextRecognitionQuestion() {
+            targetLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
+            document.getElementById('target-letter').textContent = targetLetter;
+
+            // Create grid with letters
+            const gridLetters = [targetLetter];
+            while (gridLetters.length < 12) {
+                const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
+                gridLetters.push(randomLetter);
+            }
+
+            const shuffledGrid = shuffle(gridLetters);
+            const gridContainer = document.getElementById('letter-grid');
+            gridContainer.innerHTML = '';
+
+            shuffledGrid.forEach(letter => {
+                const card = document.createElement('div');
+                card.className = 'letter-card';
+                card.textContent = letter;
+                card.onclick = () => checkRecognitionAnswer(letter, card);
+                gridContainer.appendChild(card);
+            });
+
+            playSound(`Zoek de letter ${letterSounds[targetLetter]}`);
+        }
+
+        function checkRecognitionAnswer(selectedLetter, card) {
+            if (selectedLetter === targetLetter) {
+                card.classList.add('correct');
+                scores.recognition++;
+                document.getElementById('recognition-score').textContent = `Score: ${scores.recognition}`;
+                celebrate();
+                setTimeout(nextRecognitionQuestion, 2000);
+            } else {
+                playSound('Probeer het nog eens!');
+                card.style.background = 'linear-gradient(45deg, #e17055, #d63031)';
+                setTimeout(() => {
+                    card.style.background = 'linear-gradient(45deg, #ffeaa7, #fab1a0)';
+                }, 500);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // playSound('Welkom bij het letterspel!');
+        });
+    </script>
+</body>
+</html>
