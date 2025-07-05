@@ -12,7 +12,7 @@
         }
 
         body {
-            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
             min-height: 100vh;
             display: flex;
@@ -337,7 +337,34 @@
             { word: 'vis', emoji: '🐟', sound: 'vis' },
             { word: 'pop', emoji: '🪆', sound: 'pop' },
             { word: 'bed', emoji: '🛏️', sound: 'bed' },
-            { word: 'zon', emoji: '☀️', sound: 'zon' }
+            { word: 'zon', emoji: '☀️', sound: 'zon' },
+            { word: 'peer', emoji: '🍐', sound: 'peer' },
+            { word: 'maan', emoji: '🌙', sound: 'maan' },
+            { word: 'beer', emoji: '🐻', sound: 'beer' },
+            { word: 'roos', emoji: '🌹', sound: 'roos' },
+            { word: 'kaas', emoji: '🧀', sound: 'kaas' },
+            { word: 'melk', emoji: '🥛', sound: 'melk' },
+            { word: 'ei', emoji: '🥚', sound: 'ei' },
+            { word: 'koek', emoji: '🍪', sound: 'koek' },
+            { word: 'pen', emoji: '🖊️', sound: 'pen' },
+            { word: 'tas', emoji: '🎒', sound: 'tas' },
+            { word: 'pet', emoji: '🧢', sound: 'pet' },
+            { word: 'sok', emoji: '🧦', sound: 'sok' },
+            { word: 'bril', emoji: '👓', sound: 'bril' },
+            { word: 'kam', emoji: '🪮', sound: 'kam' },
+            { word: 'zeep', emoji: '🧼', sound: 'zeep' },
+            { word: 'bad', emoji: '🛁', sound: 'bad' },
+            { word: 'deur', emoji: '🚪', sound: 'deur' },
+            { word: 'raam', emoji: '🪟', sound: 'raam' },
+            { word: 'lamp', emoji: '💡', sound: 'lamp' },
+            { word: 'klok', emoji: '⏰', sound: 'klok' },
+            { word: 'mes', emoji: '🔪', sound: 'mes' },
+            { word: 'vork', emoji: '🍴', sound: 'vork' },
+            { word: 'kom', emoji: '🍜', sound: 'kom' },
+            { word: 'bord', emoji: '🍽️', sound: 'bord' },
+            { word: 'glas', emoji: '🥤', sound: 'glas' },
+            { word: 'ijs', emoji: '🍦', sound: 'ijs' },
+            { word: 'spin', emoji: '🕷️', sound: 'spin' }
         ];
 
         // Letter sounds (Nederlandse letterklanken)
@@ -512,7 +539,7 @@
             playSound(`Maak het woord voor ${currentWord.sound}`);
         }
 
-                function selectWordLetter(letter, button) {
+        function selectWordLetter(letter, button) {
             if (button.classList.contains('used')) return;
 
             // Find next empty slot
@@ -547,7 +574,7 @@
             originalButton.classList.remove('used');
         }
 
-                function checkWordAnswer() {
+        function checkWordAnswer() {
             const userWord = currentWordInput.join('');
             if (userWord === currentWord.word) {
                 scores.word++;
