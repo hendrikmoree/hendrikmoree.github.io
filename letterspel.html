@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Letterspel voor groep 2</title>
+    <title>Letterspel</title>
     <style>
         * {
             margin: 0;
@@ -276,16 +276,7 @@
         <h1>🌟 Letterspel voor groep 2 🌟</h1>
 
         <div id="main-menu" class="menu">
-            <div id="audio-init" style="margin-bottom: 20px;">
-                <button class="menu-button" onclick="initializeAudio()" style="background: linear-gradient(45deg, #fd79a8, #e84393);">
-                    🔊 Geluid aanzetten
-                </button>
-                <button class="menu-button" onclick="debugAudio()" style="background: linear-gradient(45deg, #74b9ff, #0984e3); font-size: 0.9em;">
-                    🔍 Audio Debug
-                </button>
-                <div id="audio-status" style="margin-top: 10px; font-size: 0.9em; color: #666;"></div>
-                <div id="debug-info" style="margin-top: 10px; font-size: 0.8em; color: #333; max-height: 200px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 5px; display: none;"></div>
-            </div>
+            <div id="audio-status" style="margin-bottom: 15px; font-size: 0.9em; color: #666;"></div>
             <button class="menu-button" onclick="startAlphabetGame()">
                 🔤 Letters leren
             </button>
@@ -319,7 +310,7 @@
 
         <!-- Letter herkenning spel -->
         <div id="letter-recognition" class="game-area">
-            <h2>Zoek de letter: <span id="target-letter">A</span></h2>
+            <h2>🎯 Luister goed!</h2>
             <div class="letter-grid" id="letter-grid"></div>
             <div class="score" id="recognition-score">Score: 0</div>
             <button class="back-button" onclick="goToMenu()">← Terug naar menu</button>
@@ -338,15 +329,12 @@
 
                 // Multiple TTS providers for maximum compatibility
         function initializeAudio() {
-            document.getElementById('audio-status').textContent = '🔄 Audio wordt getest...';
-
             // Try multiple TTS providers in order of preference
             tryFreeTTS()
                 .then(() => {
                     audioInitialized = true;
                     window.preferredTTS = 'freetts';
-                    document.getElementById('audio-status').textContent = '✅ Geluid werkt (FreeTTS)!';
-                    document.getElementById('audio-init').style.display = 'none';
+                    document.getElementById('audio-status').style.display = 'none';
                 })
                 .catch(error => {
                     console.log('FreeTTS failed, trying Web Speech API:', error);
@@ -410,8 +398,7 @@
                 utterance.onstart = function() {
                     audioInitialized = true;
                     window.preferredTTS = 'webspeech';
-                    document.getElementById('audio-status').textContent = '✅ Geluid werkt (Web Speech)!';
-                    document.getElementById('audio-init').style.display = 'none';
+                    document.getElementById('audio-status').style.display = 'none';
                 };
 
                 utterance.onerror = function(error) {
@@ -426,72 +413,7 @@
             }
         }
 
-                // Enhanced debug function
-        function debugAudio() {
-            const debugDiv = document.getElementById('debug-info');
-            debugDiv.style.display = 'block';
-            debugDiv.innerHTML = '<strong>🔍 TTS Debug Info:</strong><br><br>';
 
-            // Device info
-            debugDiv.innerHTML += `<strong>Browser:</strong> ${navigator.userAgent.substring(0, 80)}...<br><br>`;
-
-            // Current TTS provider
-            debugDiv.innerHTML += `<strong>Actieve TTS:</strong> ${window.preferredTTS || 'Geen'}<br><br>`;
-
-                        // Test different providers
-            debugDiv.innerHTML += `<strong>Beschikbare TTS Providers:</strong><br>`;
-            debugDiv.innerHTML += `1. FreeTTS: <a href="https://api.streamelements.com/kappa/v2/speech?voice=nl-NL-Standard-A&text=Test" target="_blank" style="font-size: 0.8em; color: #666;">Test Link</a><br>`;
-            debugDiv.innerHTML += `2. Web Speech API: ${'speechSynthesis' in window ? '✅ Beschikbaar' : '❌ Niet beschikbaar'}<br><br>`;
-
-            // Test buttons
-            debugDiv.innerHTML += '<button onclick="testFreeTTSManual()" style="padding: 5px 10px; margin: 5px;">🎵 Test FreeTTS</button>';
-            debugDiv.innerHTML += '<button onclick="testWebSpeechManual()" style="padding: 5px 10px; margin: 5px;">🎤 Test Web Speech</button>';
-
-            // Web Speech voices info
-            if ('speechSynthesis' in window) {
-                const voices = speechSynthesis.getVoices();
-                debugDiv.innerHTML += `<br><br><strong>Web Speech Voices:</strong> ${voices.length}<br>`;
-                voices.slice(0, 5).forEach((voice, index) => {
-                    debugDiv.innerHTML += `${index + 1}. ${voice.name} (${voice.lang})<br>`;
-                });
-            }
-
-            // Current status
-            debugDiv.innerHTML += `<br><br><strong>Status:</strong> ${audioInitialized ? 'Geïnitialiseerd ✅' : 'Niet geïnitialiseerd ❌'}<br>`;
-        }
-
-                // Manual test functions
-        function testFreeTTSManual() {
-            const testText = 'Dit is een test in het Nederlands';
-            const audioUrl = `https://api.streamelements.com/kappa/v2/speech?voice=nl-NL-Standard-A&text=${encodeURIComponent(testText)}`;
-
-            const audio = new Audio(audioUrl);
-
-            audio.oncanplaythrough = function() {
-                console.log('✅ FreeTTS manual test works!');
-                audio.play().catch(console.error);
-            };
-
-            audio.onerror = function(error) {
-                console.log('❌ FreeTTS manual test failed:', error);
-                alert('FreeTTS test gefaald');
-            };
-
-            audio.load();
-        }
-
-        function testWebSpeechManual() {
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance('Dit is een test in het Nederlands');
-                utterance.lang = 'nl-NL';
-                utterance.rate = 0.8;
-                utterance.volume = 0.8;
-                speechSynthesis.speak(utterance);
-                console.log('✅ Web Speech manual test started');
-            } else {
-                alert('Web Speech API niet beschikbaar');
-            }
-        }
 
         // Play sound using preferred TTS provider
         function playSound(text) {
@@ -597,10 +519,10 @@
 
         // Letter sounds (Nederlandse letterklanken)
         const letterSounds = {
-            'a': 'ah', 'b': 'buh', 'c': 'c', 'd': 'd', 'e': 'eh',
-            'f': 'ef', 'g': 'g', 'h': 'hah', 'i': 'ie', 'j': 'jee',
-            'k': 'ka', 'l': 'el', 'm': 'em', 'n': 'en', 'o': 'oh',
-            'p': 'pee', 'q': 'kuu', 'r': 'rr', 's': 'es', 't': 'tee',
+            'a': 'ah', 'b': 'buh', 'c': 'c', 'd': 'd', 'e': 'e',
+            'f': 'f', 'g': 'g', 'h': 'ha', 'i': 'ie', 'j': 'jee',
+            'k': 'k', 'l': 'el', 'm': 'em', 'n': 'en', 'o': 'oh',
+            'p': 'p', 'q': 'q', 'r': 'rr', 's': 'es', 't': 'tee',
             'u': 'uu', 'v': 'vee', 'w': 'wee', 'x': 'iks', 'y': 'griekse ei',
             'z': 'zet'
         };
@@ -658,6 +580,9 @@
         }
 
         function nextAlphabetQuestion() {
+            // Reset de antwoord beveiliging voor nieuwe vraag
+            window.alphabetAnswerGiven = false;
+
             currentLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
             document.getElementById('current-letter').textContent = currentLetter;
 
@@ -674,11 +599,33 @@
             const optionsContainer = document.getElementById('alphabet-options');
             optionsContainer.innerHTML = '';
 
-            shuffledOptions.forEach(letter => {
+                        shuffledOptions.forEach(letter => {
                 const button = document.createElement('button');
                 button.className = 'letter-option';
                 button.textContent = letter;
-                button.onclick = () => checkAlphabetAnswer(letter);
+
+                // Dubbeltik detectie
+                let clickCount = 0;
+                let clickTimer;
+
+                button.onclick = () => {
+                    clickCount++;
+
+                    if (clickCount === 1) {
+                        // Eerste klik - wacht op mogelijke tweede klik
+                        clickTimer = setTimeout(() => {
+                            // Enkele klik - controleer antwoord
+                            checkAlphabetAnswer(letter);
+                            clickCount = 0;
+                        }, 300);
+                    } else if (clickCount === 2) {
+                        // Dubbele klik - speel letter geluid af
+                        clearTimeout(clickTimer);
+                        playSound(letterSounds[letter]);
+                        clickCount = 0;
+                    }
+                };
+
                 optionsContainer.appendChild(button);
             });
 
@@ -686,11 +633,26 @@
         }
 
         function checkAlphabetAnswer(selectedLetter) {
+            // Voorkom meerdere antwoorden voor dezelfde vraag
+            if (window.alphabetAnswerGiven) {
+                return;
+            }
+            window.alphabetAnswerGiven = true;
+
+            // Schakel alle knoppen uit
+            document.querySelectorAll('#alphabet-options .letter-option').forEach(btn => {
+                btn.style.pointerEvents = 'none';
+                btn.style.opacity = '0.6';
+            });
+
             if (selectedLetter === currentLetter) {
                 scores.alphabet++;
                 document.getElementById('alphabet-score').textContent = `Score: ${scores.alphabet}`;
                 celebrate();
-                setTimeout(nextAlphabetQuestion, 2000);
+                setTimeout(() => {
+                    window.alphabetAnswerGiven = false;
+                    nextAlphabetQuestion();
+                }, 2000);
             } else {
                 playSound('Probeer het nog eens!');
                 // Highlight correct answer
@@ -699,6 +661,15 @@
                         btn.style.background = 'linear-gradient(45deg, #00b894, #00cec9)';
                     }
                 });
+
+                // Reset na een korte tijd voor een nieuwe poging
+                setTimeout(() => {
+                    window.alphabetAnswerGiven = false;
+                    document.querySelectorAll('#alphabet-options .letter-option').forEach(btn => {
+                        btn.style.pointerEvents = 'auto';
+                        btn.style.opacity = '1';
+                    });
+                }, 1500);
             }
         }
 
@@ -831,8 +802,10 @@
         }
 
         function nextRecognitionQuestion() {
+            // Reset de antwoord beveiliging voor nieuwe vraag
+            window.recognitionAnswerGiven = false;
+
             targetLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
-            document.getElementById('target-letter').textContent = targetLetter;
 
             // Create grid with letters
             const gridLetters = [targetLetter];
@@ -857,24 +830,49 @@
         }
 
         function checkRecognitionAnswer(selectedLetter, card) {
+            // Voorkom meerdere antwoorden voor dezelfde vraag
+            if (window.recognitionAnswerGiven) {
+                return;
+            }
+            window.recognitionAnswerGiven = true;
+
+            // Schakel alle kaarten uit
+            document.querySelectorAll('#letter-grid .letter-card').forEach(c => {
+                c.style.pointerEvents = 'none';
+                c.style.opacity = '0.6';
+            });
+
             if (selectedLetter === targetLetter) {
                 card.classList.add('correct');
                 scores.recognition++;
                 document.getElementById('recognition-score').textContent = `Score: ${scores.recognition}`;
                 celebrate();
-                setTimeout(nextRecognitionQuestion, 2000);
+                setTimeout(() => {
+                    window.recognitionAnswerGiven = false;
+                    nextRecognitionQuestion();
+                }, 2000);
             } else {
                 playSound('Probeer het nog eens!');
                 card.style.background = 'linear-gradient(45deg, #e17055, #d63031)';
                 setTimeout(() => {
                     card.style.background = 'linear-gradient(45deg, #ffeaa7, #fab1a0)';
                 }, 500);
+
+                // Reset na een korte tijd voor een nieuwe poging
+                setTimeout(() => {
+                    window.recognitionAnswerGiven = false;
+                    document.querySelectorAll('#letter-grid .letter-card').forEach(c => {
+                        c.style.pointerEvents = 'auto';
+                        c.style.opacity = '1';
+                    });
+                }, 1500);
             }
         }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('audio-status').textContent = 'Klik op "Geluid aanzetten" om het spel met geluid te spelen';
+            // Start audio automatisch
+            initializeAudio();
         });
     </script>
 </body>
