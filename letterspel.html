@@ -330,13 +330,96 @@
         // Game state
         let currentGame = null;
         let audioInitialized = false;
-        let voicesLoaded = false;
-        let availableVoices = [];
         let scores = {
             alphabet: 0,
             word: 0,
             recognition: 0
         };
+
+                // Google Cloud TTS implementation
+        function initializeAudio() {
+            document.getElementById('audio-status').textContent = '🔄 Audio wordt getest...';
+
+            // Test Google Cloud TTS
+            testGoogleTTS('Test')
+                .then(() => {
+                    audioInitialized = true;
+                    document.getElementById('audio-status').textContent = '✅ Geluid werkt!';
+                    document.getElementById('audio-init').style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Google TTS failed:', error);
+                    document.getElementById('audio-status').textContent = '❌ Geluid werkt niet';
+                });
+        }
+
+        // Test Google Cloud TTS
+        function testGoogleTTS(text) {
+            return new Promise((resolve, reject) => {
+                const audioUrl = createGoogleTTSUrl(text);
+                const audio = new Audio(audioUrl);
+
+                audio.oncanplaythrough = function() {
+                    audio.play()
+                        .then(() => resolve())
+                        .catch(error => reject(error));
+                };
+
+                audio.onerror = function(error) {
+                    reject(error);
+                };
+
+                audio.load();
+            });
+        }
+
+        // Create Google TTS URL
+        function createGoogleTTSUrl(text) {
+            const baseUrl = 'https://translate.google.com/translate_tts';
+            const params = new URLSearchParams({
+                ie: 'UTF-8',
+                q: text,
+                tl: 'nl',
+                client: 'tw-ob',
+                idx: '0',
+                total: '1',
+                textlen: text.length.toString()
+            });
+
+            return `${baseUrl}?${params.toString()}`;
+        }
+
+        // Debug function
+        function debugAudio() {
+            const debugDiv = document.getElementById('debug-info');
+            debugDiv.style.display = 'block';
+            debugDiv.innerHTML = '<strong>🔍 Audio Info:</strong><br><br>';
+
+            debugDiv.innerHTML += `<strong>Google Cloud TTS:</strong> Actief<br>`;
+            debugDiv.innerHTML += `<strong>Taal:</strong> Nederlands (nl)<br>`;
+            debugDiv.innerHTML += `<strong>Status:</strong> ${audioInitialized ? 'Geïnitialiseerd' : 'Niet geïnitialiseerd'}<br><br>`;
+
+            debugDiv.innerHTML += '<button onclick="testGoogleTTS(\'Dit is een test in het Nederlands\')" style="padding: 5px 10px; margin: 5px;">🎵 Test Google TTS</button>';
+        }
+
+        // Play sound using Google Cloud TTS
+        function playSound(text) {
+            if (!audioInitialized) {
+                console.log('Audio not initialized, skipping sound:', text);
+                return;
+            }
+
+            try {
+                const audioUrl = createGoogleTTSUrl(text);
+                const audio = new Audio(audioUrl);
+
+                audio.play().catch(error => {
+                    console.error('Error playing audio:', error);
+                });
+            } catch (error) {
+                console.error('Error creating audio:', error);
+            }
+        }
 
         // Data
         const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
@@ -395,415 +478,6 @@
         let currentWord = null;
         let currentWordInput = [];
         let targetLetter = '';
-
-        // Initialize audio system with multiple fallbacks
-        function initializeAudio() {
-            debugLog('=== Audio Initialization Started ===');
-
-            // Try multiple approaches
-            tryWebSpeechAPI();
-        }
-
-        function tryWebSpeechAPI() {
-            debugLog('🔍 Trying Web Speech API...');
-
-            if (!('speechSynthesis' in window)) {
-                debugLog('❌ Web Speech API not supported');
-                tryAlternativeAPI();
-                return;
-            }
-
-            debugLog('✅ Web Speech API available');
-
-            // Force load voices
-            loadVoicesWithRetry();
-        }
-
-        function loadVoicesWithRetry() {
-            let attempts = 0;
-            const maxAttempts = 10;
-
-            function tryLoadVoices() {
-                attempts++;
-                debugLog(`🔄 Loading voices attempt ${attempts}/${maxAttempts}`);
-
-                const voices = speechSynthesis.getVoices();
-                debugLog(`📊 Found ${voices.length} voices`);
-
-                if (voices.length > 0) {
-                    availableVoices = voices;
-                    voicesLoaded = true;
-                    debugLog('✅ Voices loaded successfully');
-                    testWebSpeechAPI();
-                } else if (attempts < maxAttempts) {
-                    // Try again after a delay
-                    setTimeout(tryLoadVoices, 200);
-                } else {
-                    debugLog('❌ Failed to load voices after multiple attempts');
-                    tryAlternativeAPI();
-                }
-            }
-
-            // Set up voice change listener
-            speechSynthesis.onvoiceschanged = function() {
-                debugLog('🔄 Voices changed event fired');
-                const voices = speechSynthesis.getVoices();
-                if (voices.length > 0) {
-                    availableVoices = voices;
-                    voicesLoaded = true;
-                    debugLog('✅ Voices loaded via event');
-                    testWebSpeechAPI();
-                }
-            };
-
-            // Start trying to load voices
-            tryLoadVoices();
-        }
-
-        function testWebSpeechAPI() {
-            debugLog('🎵 Testing Web Speech API...');
-
-            const testUtterance = new SpeechSynthesisUtterance('Test');
-            testUtterance.volume = 0.5;
-            testUtterance.rate = 0.8;
-            testUtterance.pitch = 1.0;
-
-            // Find best voice
-            const bestVoice = findBestVoice();
-            if (bestVoice) {
-                testUtterance.voice = bestVoice;
-                debugLog(`🎤 Using voice: ${bestVoice.name} (${bestVoice.lang})`);
-            } else {
-                testUtterance.lang = 'nl-NL';
-                debugLog('🎤 Using default language: nl-NL');
-            }
-
-            testUtterance.onstart = function() {
-                audioInitialized = true;
-                const msg = '✅ Geluid werkt!';
-                document.getElementById('audio-status').textContent = msg;
-                debugLog(msg);
-            };
-
-            testUtterance.onend = function() {
-                debugLog('✅ Test audio completed');
-            };
-
-            testUtterance.onerror = function(event) {
-                debugLog(`❌ Web Speech API error: ${event.error}`);
-                tryAlternativeAPI();
-            };
-
-            try {
-                speechSynthesis.speak(testUtterance);
-                debugLog('📤 Test utterance sent to speechSynthesis');
-            } catch (error) {
-                debugLog(`❌ Error speaking: ${error.message}`);
-                tryAlternativeAPI();
-            }
-        }
-
-        function tryAlternativeAPI() {
-            debugLog('🔄 Trying alternative TTS solution...');
-
-            // Use a different free TTS API
-            testVoiceRSSAPI();
-        }
-
-        function testVoiceRSSAPI() {
-            debugLog('🎵 Testing VoiceRSS API...');
-
-            const testText = 'Test geluid';
-            // Use a more reliable Dutch TTS API
-            const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=nl&client=tw-ob&q=${encodeURIComponent(testText)}`;
-
-            const audio = new Audio(audioUrl);
-
-            audio.oncanplaythrough = function() {
-                debugLog('✅ Google TTS API audio ready');
-                audio.play().then(() => {
-                    audioInitialized = true;
-                    const msg = '✅ Geluid werkt in het Nederlands!';
-                    document.getElementById('audio-status').textContent = msg;
-                    debugLog(msg);
-                }).catch(error => {
-                    debugLog(`❌ Google TTS playback error: ${error.message}`);
-                    tryAlternativeDutchAPI();
-                });
-            };
-
-            audio.onerror = function(error) {
-                debugLog(`❌ Google TTS API error: ${error.message || 'Unknown error'}`);
-                tryAlternativeDutchAPI();
-            };
-
-            // Load the audio
-            audio.load();
-        }
-
-        function tryAlternativeDutchAPI() {
-            debugLog('🔄 Trying alternative Dutch TTS...');
-
-            const testText = 'Test geluid';
-            // Try another Dutch TTS service
-            const audioUrl = `https://api.voicerss.org/?key=demo&hl=nl-nl&c=MP3&f=44khz_16bit_stereo&src=${encodeURIComponent(testText)}`;
-
-            const audio = new Audio(audioUrl);
-
-            audio.oncanplaythrough = function() {
-                debugLog('✅ VoiceRSS Dutch API audio ready');
-                audio.play().then(() => {
-                    audioInitialized = true;
-                    const msg = '✅ Geluid werkt in het Nederlands (VoiceRSS)!';
-                    document.getElementById('audio-status').textContent = msg;
-                    debugLog(msg);
-                }).catch(error => {
-                    debugLog(`❌ VoiceRSS playback error: ${error.message}`);
-                    trySimpleBeep();
-                });
-            };
-
-            audio.onerror = function(error) {
-                debugLog(`❌ VoiceRSS API error: ${error.message || 'Unknown error'}`);
-                trySimpleBeep();
-            };
-
-            // Load the audio
-            audio.load();
-        }
-
-        function trySimpleBeep() {
-            debugLog('🔔 Trying simple beep as last resort...');
-
-            try {
-                // Create a simple beep sound using Web Audio API
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-
-                oscillator.frequency.value = 800;
-                oscillator.type = 'sine';
-
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.5);
-
-                audioInitialized = true;
-                const msg = '✅ Audio werkt (alleen pieptonen)';
-                document.getElementById('audio-status').textContent = msg;
-                debugLog(msg);
-
-            } catch (error) {
-                debugLog(`❌ Even beep failed: ${error.message}`);
-                const msg = '❌ Audio werkt niet op dit apparaat';
-                document.getElementById('audio-status').textContent = msg;
-                debugLog(msg);
-            }
-        }
-
-        function debugAudio() {
-            const debugDiv = document.getElementById('debug-info');
-            debugDiv.style.display = 'block';
-            debugDiv.innerHTML = '<strong>🔍 Audio Debug Informatie:</strong><br><br>';
-
-            // Browser info
-            debugDiv.innerHTML += `<strong>Browser:</strong> ${navigator.userAgent}<br><br>`;
-
-            // Check all audio capabilities
-            debugDiv.innerHTML += '<strong>Audio Capabilities:</strong><br>';
-            debugDiv.innerHTML += `speechSynthesis: ${'speechSynthesis' in window ? '✅' : '❌'}<br>`;
-            debugDiv.innerHTML += `AudioContext: ${(window.AudioContext || window.webkitAudioContext) ? '✅' : '❌'}<br>`;
-            debugDiv.innerHTML += `HTML5 Audio: ${typeof Audio !== 'undefined' ? '✅' : '❌'}<br><br>`;
-
-            // Web Speech API info
-            if ('speechSynthesis' in window) {
-                const voices = speechSynthesis.getVoices();
-                debugDiv.innerHTML += `<strong>Web Speech API Voices:</strong> ${voices.length}<br>`;
-
-                if (voices.length > 0) {
-                    const dutchVoices = voices.filter(v => v.lang.startsWith('nl'));
-                    debugDiv.innerHTML += `Nederlandse voices: ${dutchVoices.length}<br>`;
-
-                    voices.slice(0, 5).forEach((voice, index) => {
-                        debugDiv.innerHTML += `${index + 1}. ${voice.name} (${voice.lang})<br>`;
-                    });
-
-                    if (voices.length > 5) {
-                        debugDiv.innerHTML += `... en ${voices.length - 5} meer<br>`;
-                    }
-                }
-            }
-
-            debugDiv.innerHTML += '<br><button onclick="forceReloadVoices()" style="padding: 5px 10px; margin: 5px;">🔄 Herlaad Voices</button>';
-            debugDiv.innerHTML += '<button onclick="testAllMethods()" style="padding: 5px 10px; margin: 5px;">🎵 Test Alle Methoden</button>';
-            debugDiv.innerHTML += '<button onclick="testDutchOnly()" style="padding: 5px 10px; margin: 5px;">🇳🇱 Test Alleen Nederlands</button>';
-        }
-
-        function forceReloadVoices() {
-            debugLog('🔄 Force reloading voices...');
-            speechSynthesis.cancel();
-            loadVoicesWithRetry();
-        }
-
-        function testAllMethods() {
-            debugLog('🎵 Testing all audio methods...');
-
-            setTimeout(() => testWebSpeechAPI(), 500);
-            setTimeout(() => testVoiceRSSAPI(), 2000);
-            setTimeout(() => trySimpleBeep(), 4000);
-        }
-
-        function testDutchOnly() {
-            debugLog('🇳🇱 Testing Dutch-only audio...');
-
-            // Test Google Translate TTS
-            const testText = 'Hallo, dit is een test in het Nederlands';
-            const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=nl&client=tw-ob&q=${encodeURIComponent(testText)}`;
-            const audio = new Audio(googleUrl);
-
-            audio.oncanplaythrough = function() {
-                debugLog('✅ Google Nederlandse TTS werkt');
-                audio.play().catch(error => {
-                    debugLog(`❌ Google TTS afspelen mislukt: ${error.message}`);
-                });
-            };
-
-            audio.onerror = function(error) {
-                debugLog(`❌ Google Nederlandse TTS error: ${error.message || 'Unknown error'}`);
-
-                // Try VoiceRSS as backup
-                const voiceRSSUrl = `https://api.voicerss.org/?key=demo&hl=nl-nl&c=MP3&f=44khz_16bit_stereo&src=${encodeURIComponent(testText)}`;
-                const backupAudio = new Audio(voiceRSSUrl);
-
-                backupAudio.oncanplaythrough = function() {
-                    debugLog('✅ VoiceRSS Nederlandse TTS werkt als backup');
-                    backupAudio.play().catch(error => {
-                        debugLog(`❌ VoiceRSS afspelen mislukt: ${error.message}`);
-                    });
-                };
-
-                backupAudio.onerror = function(error2) {
-                    debugLog(`❌ VoiceRSS Nederlandse TTS ook mislukt: ${error2.message || 'Unknown error'}`);
-                };
-
-                backupAudio.load();
-            };
-
-            audio.load();
-        }
-
-        function debugLog(message) {
-            console.log('[Audio Debug]', message);
-            const debugDiv = document.getElementById('debug-info');
-            if (debugDiv && debugDiv.style.display !== 'none') {
-                debugDiv.innerHTML += message + '<br>';
-                debugDiv.scrollTop = debugDiv.scrollHeight;
-            }
-        }
-
-        function loadVoices() {
-            // This is now handled by loadVoicesWithRetry
-        }
-
-        function findBestVoice() {
-            if (!voicesLoaded || availableVoices.length === 0) {
-                return null;
-            }
-
-            // Try to find Dutch voice with multiple search patterns
-            let dutchVoice = availableVoices.find(voice =>
-                voice.lang.startsWith('nl') ||
-                voice.lang.startsWith('nl-') ||
-                voice.lang.toLowerCase().includes('dutch') ||
-                voice.lang.toLowerCase().includes('nederland') ||
-                voice.name.toLowerCase().includes('dutch') ||
-                voice.name.toLowerCase().includes('nederland')
-            );
-
-            if (dutchVoice) {
-                debugLog(`🇳🇱 Found Dutch voice: ${dutchVoice.name} (${dutchVoice.lang})`);
-                return dutchVoice;
-            }
-
-            // If no Dutch voice, log what we have
-            debugLog('❌ No Dutch voice found. Available voices:');
-            availableVoices.slice(0, 5).forEach(voice => {
-                debugLog(`- ${voice.name} (${voice.lang})`);
-            });
-
-            // Don't fallback to English - force API usage instead
-            return null;
-        }
-
-        function playSound(text) {
-            if (!audioInitialized) {
-                console.log('Audio not initialized, skipping sound:', text);
-                return;
-            }
-
-            // Always try to use Dutch - prioritize API over English voices
-            const dutchVoice = findBestVoice();
-
-            if ('speechSynthesis' in window && voicesLoaded && dutchVoice) {
-                debugLog(`🎤 Using Dutch Web Speech voice: ${dutchVoice.name}`);
-                playSoundWithWebSpeech(text);
-            } else {
-                debugLog('🌐 Using Dutch API instead of English voice');
-                playSoundWithAPI(text);
-            }
-        }
-
-        function playSoundWithAPI(text) {
-            try {
-                // Try Google Translate TTS first (most reliable for Dutch)
-                const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=nl&client=tw-ob&q=${encodeURIComponent(text)}`;
-                const audio = new Audio(googleUrl);
-
-                audio.play().catch(error => {
-                    console.log('Google TTS failed, trying VoiceRSS:', error);
-                    // Fallback to VoiceRSS
-                    const voiceRSSUrl = `https://api.voicerss.org/?key=demo&hl=nl-nl&c=MP3&f=44khz_16bit_stereo&src=${encodeURIComponent(text)}`;
-                    const fallbackAudio = new Audio(voiceRSSUrl);
-
-                    fallbackAudio.play().catch(error2 => {
-                        console.error('All Dutch TTS failed:', error2);
-                        console.log('Would say in Dutch:', text);
-                    });
-                });
-            } catch (error) {
-                console.error('Error with Dutch API audio:', error);
-            }
-        }
-
-        function playSoundWithWebSpeech(text) {
-            try {
-                speechSynthesis.cancel();
-
-                const utterance = new SpeechSynthesisUtterance(text);
-                const bestVoice = findBestVoice();
-
-                if (bestVoice) {
-                    utterance.voice = bestVoice;
-                    utterance.lang = bestVoice.lang;
-                } else {
-                    utterance.lang = 'nl-NL';
-                }
-
-                utterance.rate = 0.8;
-                utterance.pitch = 1.0;
-                utterance.volume = 0.8;
-
-                speechSynthesis.speak(utterance);
-            } catch (error) {
-                console.error('Error with Web Speech:', error);
-                playSoundWithAPI(text);
-            }
-        }
 
         // Utility functions
         function shuffle(array) {
@@ -1068,10 +742,6 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            // Load voices immediately when page loads
-            loadVoices();
-
-            // Show audio initialization button
             document.getElementById('audio-status').textContent = 'Klik op "Geluid aanzetten" om het spel met geluid te spelen';
         });
     </script>
