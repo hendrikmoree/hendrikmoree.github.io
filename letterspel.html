@@ -336,242 +336,221 @@
             recognition: 0
         };
 
-                // Google TTS with multiple URL formats to bypass CORS
+                // Multiple TTS providers for maximum compatibility
         function initializeAudio() {
             document.getElementById('audio-status').textContent = '🔄 Audio wordt getest...';
 
-            // Test Google TTS with multiple URL formats
-            testGoogleTTS('Test')
+            // Try multiple TTS providers in order of preference
+            tryFreeTTS()
                 .then(() => {
                     audioInitialized = true;
-                    document.getElementById('audio-status').textContent = '✅ Geluid werkt!';
+                    window.preferredTTS = 'freetts';
+                    document.getElementById('audio-status').textContent = '✅ Geluid werkt (FreeTTS)!';
                     document.getElementById('audio-init').style.display = 'none';
                 })
                 .catch(error => {
-                    console.error('Google TTS failed:', error);
-                    document.getElementById('audio-status').textContent = '❌ Geluid werkt niet - ' + error.message;
+                    console.log('FreeTTS failed, trying Web Speech API:', error);
+                    tryWebSpeechAPI();
                 });
         }
 
-        // Test Google TTS with multiple URL formats
-        function testGoogleTTS(text) {
+                // Try FreeTTS (StreamElements TTS - no API key needed)
+        function tryFreeTTS() {
             return new Promise((resolve, reject) => {
-                // Try multiple Google TTS URL formats
-                const urls = [
-                    createGoogleTTSUrl(text, 'gtx'),      // Most reliable
-                    createGoogleTTSUrl(text, 'webapp'),   // Alternative 1
-                    createGoogleTTSUrl(text, 'tw-ob'),    // Original
-                    createGoogleTTSUrl(text, 'dict'),     // Alternative 2
-                    createGoogleTTSUrl(text, 'android')   // Mobile format
-                ];
+                const testText = 'Test';
+                const audioUrl = `https://api.streamelements.com/kappa/v2/speech?voice=nl-NL-Standard-A&text=${encodeURIComponent(testText)}`;
 
-                tryUrls(urls, 0, resolve, reject);
+                const audio = new Audio(audioUrl);
+
+                audio.oncanplaythrough = function() {
+                    console.log('✅ FreeTTS works!');
+                    audio.play()
+                        .then(() => resolve())
+                        .catch(error => reject(error));
+                };
+
+                audio.onerror = function(error) {
+                    console.log('❌ FreeTTS failed:', error);
+                    reject(error);
+                };
+
+                audio.load();
             });
         }
 
-        // Try multiple URLs until one works
-        function tryUrls(urls, index, resolve, reject) {
-            if (index >= urls.length) {
-                reject(new Error('Alle Google TTS URLs gefaald'));
+        // Fallback to Web Speech API
+        function tryWebSpeechAPI() {
+            if (!('speechSynthesis' in window)) {
+                document.getElementById('audio-status').textContent = '❌ Spraak niet ondersteund op dit apparaat';
                 return;
             }
 
-            const audio = new Audio();
-            const currentUrl = urls[index];
-
-            console.log(`Trying URL ${index + 1}:`, currentUrl);
-
-            // Set up success handler
-            audio.oncanplaythrough = function() {
-                console.log(`✅ URL ${index + 1} works!`);
-                audio.play()
-                    .then(() => {
-                        // Store working URL format for future use
-                        window.workingGoogleTTSFormat = getFormatFromIndex(index);
-                        resolve();
-                    })
-                    .catch(error => {
-                        console.log(`URL ${index + 1} loads but can't play:`, error);
-                        tryUrls(urls, index + 1, resolve, reject);
-                    });
+            // Wait for voices to load
+            const checkVoices = () => {
+                const voices = speechSynthesis.getVoices();
+                if (voices.length > 0) {
+                    testWebSpeech();
+                } else {
+                    setTimeout(checkVoices, 100);
+                }
             };
 
-            // Set up error handler
-            audio.onerror = function(error) {
-                console.log(`❌ URL ${index + 1} failed:`, error);
-                tryUrls(urls, index + 1, resolve, reject);
-            };
-
-            // Try to load the audio
-            audio.src = currentUrl;
-            audio.load();
+            speechSynthesis.onvoiceschanged = checkVoices;
+            checkVoices();
         }
 
-        // Get format name from index
-        function getFormatFromIndex(index) {
-            const formats = ['gtx', 'webapp', 'tw-ob', 'dict', 'android'];
-            return formats[index] || 'gtx';
+        // Test Web Speech API
+        function testWebSpeech() {
+            try {
+                const utterance = new SpeechSynthesisUtterance('Test');
+                utterance.lang = 'nl-NL';
+                utterance.rate = 0.8;
+                utterance.volume = 0.8;
+
+                utterance.onstart = function() {
+                    audioInitialized = true;
+                    window.preferredTTS = 'webspeech';
+                    document.getElementById('audio-status').textContent = '✅ Geluid werkt (Web Speech)!';
+                    document.getElementById('audio-init').style.display = 'none';
+                };
+
+                utterance.onerror = function(error) {
+                    console.error('Web Speech error:', error);
+                    document.getElementById('audio-status').textContent = '❌ Geluid werkt niet op dit apparaat';
+                };
+
+                speechSynthesis.speak(utterance);
+            } catch (error) {
+                console.error('Web Speech failed:', error);
+                document.getElementById('audio-status').textContent = '❌ Geluid werkt niet op dit apparaat';
+            }
         }
 
-        // Create Google TTS URL with different client formats
-        function createGoogleTTSUrl(text, client = 'gtx') {
-            const encodedText = encodeURIComponent(text);
-            const baseUrl = 'https://translate.google.com/translate_tts';
-
-            // Different client parameters that may bypass CORS differently
-            const clientParams = {
-                'gtx': 'gtx',
-                'webapp': 'webapp',
-                'tw-ob': 'tw-ob',
-                'dict': 'dict-chrome-ex',
-                'android': 'android'
-            };
-
-            const params = new URLSearchParams({
-                ie: 'UTF-8',
-                q: encodedText,
-                tl: 'nl',
-                client: clientParams[client] || 'gtx',
-                idx: '0',
-                total: '1',
-                textlen: text.length.toString()
-            });
-
-            return `${baseUrl}?${params.toString()}`;
-        }
-
-        // Enhanced debug function
+                // Enhanced debug function
         function debugAudio() {
             const debugDiv = document.getElementById('debug-info');
             debugDiv.style.display = 'block';
-            debugDiv.innerHTML = '<strong>🔍 Google TTS Debug Info:</strong><br><br>';
+            debugDiv.innerHTML = '<strong>🔍 TTS Debug Info:</strong><br><br>';
 
             // Device info
             debugDiv.innerHTML += `<strong>Browser:</strong> ${navigator.userAgent.substring(0, 80)}...<br><br>`;
 
-            // Working format info
-            if (window.workingGoogleTTSFormat) {
-                debugDiv.innerHTML += `<strong>Werkende URL format:</strong> ${window.workingGoogleTTSFormat}<br><br>`;
+            // Current TTS provider
+            debugDiv.innerHTML += `<strong>Actieve TTS:</strong> ${window.preferredTTS || 'Geen'}<br><br>`;
+
+                        // Test different providers
+            debugDiv.innerHTML += `<strong>Beschikbare TTS Providers:</strong><br>`;
+            debugDiv.innerHTML += `1. FreeTTS: <a href="https://api.streamelements.com/kappa/v2/speech?voice=nl-NL-Standard-A&text=Test" target="_blank" style="font-size: 0.8em; color: #666;">Test Link</a><br>`;
+            debugDiv.innerHTML += `2. Web Speech API: ${'speechSynthesis' in window ? '✅ Beschikbaar' : '❌ Niet beschikbaar'}<br><br>`;
+
+            // Test buttons
+            debugDiv.innerHTML += '<button onclick="testFreeTTSManual()" style="padding: 5px 10px; margin: 5px;">🎵 Test FreeTTS</button>';
+            debugDiv.innerHTML += '<button onclick="testWebSpeechManual()" style="padding: 5px 10px; margin: 5px;">🎤 Test Web Speech</button>';
+
+            // Web Speech voices info
+            if ('speechSynthesis' in window) {
+                const voices = speechSynthesis.getVoices();
+                debugDiv.innerHTML += `<br><br><strong>Web Speech Voices:</strong> ${voices.length}<br>`;
+                voices.slice(0, 5).forEach((voice, index) => {
+                    debugDiv.innerHTML += `${index + 1}. ${voice.name} (${voice.lang})<br>`;
+                });
             }
-
-            // Test all URL formats
-            debugDiv.innerHTML += `<strong>Google TTS URL Formats:</strong><br>`;
-            const testText = 'Test';
-            const formats = ['gtx', 'webapp', 'tw-ob', 'dict', 'android'];
-
-            formats.forEach((format, index) => {
-                const url = createGoogleTTSUrl(testText, format);
-                debugDiv.innerHTML += `${index + 1}. ${format}: <a href="${url}" target="_blank" style="font-size: 0.8em; color: #666;">Test Link</a><br>`;
-            });
-
-            debugDiv.innerHTML += '<br><button onclick="testAllGoogleUrls()" style="padding: 5px 10px; margin: 5px;">🎵 Test Alle Formats</button>';
-            debugDiv.innerHTML += '<button onclick="testGoogleTTSManual()" style="padding: 5px 10px; margin: 5px;">🔊 Test Google TTS</button>';
 
             // Current status
             debugDiv.innerHTML += `<br><br><strong>Status:</strong> ${audioInitialized ? 'Geïnitialiseerd ✅' : 'Niet geïnitialiseerd ❌'}<br>`;
         }
 
-        // Manual test functions
-        function testAllGoogleUrls() {
+                // Manual test functions
+        function testFreeTTSManual() {
             const testText = 'Dit is een test in het Nederlands';
-            const formats = ['gtx', 'webapp', 'tw-ob', 'dict', 'android'];
+            const audioUrl = `https://api.streamelements.com/kappa/v2/speech?voice=nl-NL-Standard-A&text=${encodeURIComponent(testText)}`;
 
-            console.log('🔍 Testing all Google TTS URL formats...');
+            const audio = new Audio(audioUrl);
 
-            formats.forEach((format, index) => {
-                const url = createGoogleTTSUrl(testText, format);
-                console.log(`${index + 1}. ${format}:`, url);
+            audio.oncanplaythrough = function() {
+                console.log('✅ FreeTTS manual test works!');
+                audio.play().catch(console.error);
+            };
 
-                const audio = new Audio();
+            audio.onerror = function(error) {
+                console.log('❌ FreeTTS manual test failed:', error);
+                alert('FreeTTS test gefaald');
+            };
 
-                audio.oncanplaythrough = function() {
-                    console.log(`✅ Format ${format} works!`);
-                    if (index === 0) { // Only play the first working one
-                        audio.play().catch(console.error);
-                    }
-                };
-
-                audio.onerror = function(error) {
-                    console.log(`❌ Format ${format} failed:`, error);
-                };
-
-                audio.src = url;
-                audio.load();
-            });
+            audio.load();
         }
 
-        function testGoogleTTSManual() {
-            testGoogleTTS('Dit is een test in het Nederlands')
-                .then(() => console.log('✅ Google TTS manual test succeeded'))
-                .catch(error => console.log('❌ Google TTS manual test failed:', error));
+        function testWebSpeechManual() {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance('Dit is een test in het Nederlands');
+                utterance.lang = 'nl-NL';
+                utterance.rate = 0.8;
+                utterance.volume = 0.8;
+                speechSynthesis.speak(utterance);
+                console.log('✅ Web Speech manual test started');
+            } else {
+                alert('Web Speech API niet beschikbaar');
+            }
         }
 
-        // Play sound using Google TTS with format preference
+        // Play sound using preferred TTS provider
         function playSound(text) {
             if (!audioInitialized) {
                 console.log('Audio not initialized, skipping sound:', text);
                 return;
             }
 
-            try {
-                // Use working format if known, otherwise try all formats
-                const preferredFormat = window.workingGoogleTTSFormat || 'gtx';
-                const audio = new Audio();
+                        try {
+                if (window.preferredTTS === 'freetts') {
+                    // Use FreeTTS
+                    const audioUrl = `https://api.streamelements.com/kappa/v2/speech?voice=nl-NL-Standard-A&text=${encodeURIComponent(text)}`;
+                    const audio = new Audio(audioUrl);
 
-                const tryPlayWithFormat = (format) => {
-                    const url = createGoogleTTSUrl(text, format);
-                    audio.src = url;
+                    audio.play().catch(error => {
+                        console.log('FreeTTS failed, trying Web Speech fallback:', error);
+                        playWithWebSpeech(text);
+                    });
+                } else if (window.preferredTTS === 'webspeech') {
+                    // Use Web Speech API
+                    playWithWebSpeech(text);
+                } else {
+                    // Try FreeTTS first, then Web Speech
+                    const audioUrl = `https://api.streamelements.com/kappa/v2/speech?voice=nl-NL-Standard-A&text=${encodeURIComponent(text)}`;
+                    const audio = new Audio(audioUrl);
 
                     audio.oncanplaythrough = function() {
                         audio.play().catch(error => {
-                            console.log(`Play failed with ${format}, trying fallback:`, error);
-                            tryAllFormatsForPlay(text);
+                            console.log('FreeTTS failed, trying Web Speech:', error);
+                            playWithWebSpeech(text);
                         });
                     };
 
-                    audio.onerror = function(error) {
-                        console.log(`Format ${format} failed, trying fallback:`, error);
-                        tryAllFormatsForPlay(text);
+                    audio.onerror = function() {
+                        console.log('FreeTTS error, trying Web Speech');
+                        playWithWebSpeech(text);
                     };
 
                     audio.load();
-                };
-
-                tryPlayWithFormat(preferredFormat);
+                }
             } catch (error) {
                 console.error('Error playing sound:', error);
+                playWithWebSpeech(text);
             }
         }
 
-        // Fallback function to try all formats for playing
-        function tryAllFormatsForPlay(text) {
-            const formats = ['gtx', 'webapp', 'tw-ob', 'dict', 'android'];
-
-            const tryFormat = (index) => {
-                if (index >= formats.length) {
-                    console.error('All formats failed for:', text);
-                    return;
+        // Fallback to Web Speech API
+        function playWithWebSpeech(text) {
+            if ('speechSynthesis' in window) {
+                try {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'nl-NL';
+                    utterance.rate = 0.8;
+                    utterance.volume = 0.8;
+                    speechSynthesis.speak(utterance);
+                } catch (error) {
+                    console.error('Web Speech also failed:', error);
                 }
-
-                const audio = new Audio();
-                const url = createGoogleTTSUrl(text, formats[index]);
-
-                audio.oncanplaythrough = function() {
-                    audio.play().catch(error => {
-                        console.log(`Format ${formats[index]} failed to play, trying next:`, error);
-                        tryFormat(index + 1);
-                    });
-                };
-
-                audio.onerror = function() {
-                    tryFormat(index + 1);
-                };
-
-                audio.src = url;
-                audio.load();
-            };
-
-            tryFormat(0);
+            }
         }
 
         // Data
