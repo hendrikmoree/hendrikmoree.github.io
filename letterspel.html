@@ -273,7 +273,7 @@
 </head>
 <body>
     <div class="game-container">
-        <h1>🌟 Letterspel voor groep 2 🌟</h1>
+        <h1>🌟 Letterspel 🌟</h1>
 
         <div id="main-menu" class="menu">
             <div id="audio-status" style="margin-bottom: 15px; font-size: 0.9em; color: #666;"></div>
@@ -352,9 +352,8 @@
 
                 audio.oncanplaythrough = function() {
                     console.log('✅ FreeTTS works!');
-                    audio.play()
-                        .then(() => resolve())
-                        .catch(error => reject(error));
+                    // Test audio zonder af te spelen
+                    resolve();
                 };
 
                 audio.onerror = function(error) {
@@ -390,23 +389,17 @@
         // Test Web Speech API
         function testWebSpeech() {
             try {
-                const utterance = new SpeechSynthesisUtterance('Test');
-                utterance.lang = 'nl-NL';
-                utterance.rate = 0.8;
-                utterance.volume = 0.8;
-
-                utterance.onstart = function() {
+                // Test of Web Speech API beschikbaar is zonder geluid af te spelen
+                const voices = speechSynthesis.getVoices();
+                if (voices.length > 0 || 'speechSynthesis' in window) {
                     audioInitialized = true;
                     window.preferredTTS = 'webspeech';
                     document.getElementById('audio-status').style.display = 'none';
-                };
-
-                utterance.onerror = function(error) {
-                    console.error('Web Speech error:', error);
+                    console.log('✅ Web Speech API available');
+                } else {
+                    console.error('No voices available');
                     document.getElementById('audio-status').textContent = '❌ Geluid werkt niet op dit apparaat';
-                };
-
-                speechSynthesis.speak(utterance);
+                }
             } catch (error) {
                 console.error('Web Speech failed:', error);
                 document.getElementById('audio-status').textContent = '❌ Geluid werkt niet op dit apparaat';
@@ -514,15 +507,80 @@
             { word: 'bord', emoji: '🍽️', sound: 'bord' },
             { word: 'glas', emoji: '🥤', sound: 'glas' },
             { word: 'ijs', emoji: '🍦', sound: 'ijs' },
-            { word: 'spin', emoji: '🕷️', sound: 'spin' }
+            { word: 'spin', emoji: '🕷️', sound: 'spin' },
+            // Nieuwe 3-letter woorden
+            { word: 'arm', emoji: '💪', sound: 'arm' },
+            { word: 'oog', emoji: '👁️', sound: 'oog' },
+            { word: 'oor', emoji: '👂', sound: 'oor' },
+            { word: 'kop', emoji: '☕', sound: 'kop' },
+            { word: 'pot', emoji: '🫖', sound: 'pot' },
+            { word: 'pan', emoji: '🍳', sound: 'pan' },
+            { word: 'bus', emoji: '🚌', sound: 'bus' },
+            { word: 'zee', emoji: '🌊', sound: 'zee' },
+            { word: 'bos', emoji: '🌲', sound: 'bos' },
+            { word: 'weg', emoji: '🛣️', sound: 'weg' },
+            { word: 'ster', emoji: '⭐', sound: 'ster' },
+            { word: 'wolk', emoji: '☁️', sound: 'wolk' },
+            { word: 'koe', emoji: '🐄', sound: 'koe' },
+            { word: 'aap', emoji: '🐒', sound: 'aap' },
+            { word: 'uil', emoji: '🦉', sound: 'uil' },
+            { word: 'bij', emoji: '🐝', sound: 'bij' },
+            { word: 'rat', emoji: '🐀', sound: 'rat' },
+            { word: 'ui', emoji: '🧅', sound: 'ui' },
+            { word: 'sap', emoji: '🧃', sound: 'sap' },
+            { word: 'kip', emoji: '🐔', sound: 'kip' },
+            // Nieuwe 4-letter woorden
+            { word: 'auto', emoji: '🚗', sound: 'auto' },
+            { word: 'huis', emoji: '🏠', sound: 'huis' },
+            { word: 'tuin', emoji: '🌻', sound: 'tuin' },
+            { word: 'park', emoji: '🌳', sound: 'park' },
+            { word: 'brug', emoji: '🌉', sound: 'brug' },
+            { word: 'berg', emoji: '⛰️', sound: 'berg' },
+            { word: 'meer', emoji: '🏞️', sound: 'meer' },
+            { word: 'vuur', emoji: '🔥', sound: 'vuur' },
+            { word: 'wind', emoji: '💨', sound: 'wind' },
+            { word: 'neus', emoji: '👃', sound: 'neus' },
+            { word: 'voet', emoji: '🦶', sound: 'voet' },
+            { word: 'hand', emoji: '✋', sound: 'hand' },
+            { word: 'been', emoji: '🦵', sound: 'been' },
+            { word: 'haar', emoji: '💇', sound: 'haar' },
+            { word: 'mond', emoji: '👄', sound: 'mond' },
+            { word: 'kast', emoji: '🗄️', sound: 'kast' },
+            { word: 'bank', emoji: '🛋️', sound: 'bank' },
+            { word: 'fiets', emoji: '🚲', sound: 'fiets' },
+            { word: 'soep', emoji: '🍲', sound: 'soep' },
+            { word: 'muis', emoji: '🐭', sound: 'muis' },
+            { word: 'eend', emoji: '🦆', sound: 'eend' },
+            { word: 'gans', emoji: '🪿', sound: 'gans' },
+            { word: 'haai', emoji: '🦈', sound: 'haai' },
+            { word: 'slak', emoji: '🐌', sound: 'slak' },
+            { word: 'rups', emoji: '🐛', sound: 'rups' },
+            { word: 'tent', emoji: '⛺', sound: 'tent' },
+            { word: 'boot', emoji: '🛥️', sound: 'boot' },
+            { word: 'vlag', emoji: '🏳️', sound: 'vlag' },
+            { word: 'ring', emoji: '💍', sound: 'ring' },
+            { word: 'kado', emoji: '🎁', sound: 'kado' },
+            { word: 'foto', emoji: '📸', sound: 'foto' },
+            { word: 'doos', emoji: '📦', sound: 'doos' },
+            { word: 'slak', emoji: '🐌', sound: 'slak' },
+            { word: 'krab', emoji: '🦀', sound: 'krab' },
+            { word: 'golf', emoji: '🏌️', sound: 'golf' },
+            { word: 'boon', emoji: '🫘', sound: 'boon' },
+            { word: 'noot', emoji: '🥜', sound: 'noot' },
+            { word: 'drop', emoji: '🍬', sound: 'drop' },
+            { word: 'zoet', emoji: '🍯', sound: 'zoet' },
+            { word: 'zuur', emoji: '🍋', sound: 'zuur' },
+            { word: 'warm', emoji: '🔥', sound: 'warm' },
+            { word: 'koud', emoji: '🧊', sound: 'koud' },
+            { word: 'hard', emoji: '🗿', sound: 'hard' }
         ];
 
         // Letter sounds (Nederlandse letterklanken)
         const letterSounds = {
-            'a': 'ah', 'b': 'buh', 'c': 'c', 'd': 'd', 'e': 'e',
+            'a': 'ah', 'b': 'b', 'c': 'c', 'd': 'd', 'e': 'e',
             'f': 'f', 'g': 'g', 'h': 'ha', 'i': 'ie', 'j': 'jee',
             'k': 'k', 'l': 'el', 'm': 'em', 'n': 'en', 'o': 'oh',
-            'p': 'p', 'q': 'q', 'r': 'rr', 's': 'es', 't': 'tee',
+            'p': 'p', 'q': 'q', 'r': 'rr', 's': 'es', 't': 'thHee',
             'u': 'uu', 'v': 'vee', 'w': 'wee', 'x': 'iks', 'y': 'griekse ei',
             'z': 'zet'
         };
