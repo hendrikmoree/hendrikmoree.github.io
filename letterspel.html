@@ -886,15 +886,15 @@
             nextRecognitionQuestion();
         }
 
-        function nextRecognitionQuestion() {
+                function nextRecognitionQuestion() {
             // Reset de antwoord beveiliging voor nieuwe vraag
             window.recognitionAnswerGiven = false;
 
             targetLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
 
-            // Create grid with letters
+            // Create grid with letters (max 10)
             const gridLetters = [targetLetter];
-            while (gridLetters.length < 12) {
+            while (gridLetters.length < 10) {
                 const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
                 gridLetters.push(randomLetter);
             }
