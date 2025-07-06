@@ -336,11 +336,11 @@
             recognition: 0
         };
 
-                // Google Cloud TTS implementation
+                // Google TTS with multiple URL formats to bypass CORS
         function initializeAudio() {
             document.getElementById('audio-status').textContent = '🔄 Audio wordt getest...';
 
-            // Test Google Cloud TTS
+            // Test Google TTS with multiple URL formats
             testGoogleTTS('Test')
                 .then(() => {
                     audioInitialized = true;
@@ -349,38 +349,89 @@
                 })
                 .catch(error => {
                     console.error('Google TTS failed:', error);
-                    document.getElementById('audio-status').textContent = '❌ Geluid werkt niet';
+                    document.getElementById('audio-status').textContent = '❌ Geluid werkt niet - ' + error.message;
                 });
         }
 
-        // Test Google Cloud TTS
+        // Test Google TTS with multiple URL formats
         function testGoogleTTS(text) {
             return new Promise((resolve, reject) => {
-                const audioUrl = createGoogleTTSUrl(text);
-                const audio = new Audio(audioUrl);
+                // Try multiple Google TTS URL formats
+                const urls = [
+                    createGoogleTTSUrl(text, 'gtx'),      // Most reliable
+                    createGoogleTTSUrl(text, 'webapp'),   // Alternative 1
+                    createGoogleTTSUrl(text, 'tw-ob'),    // Original
+                    createGoogleTTSUrl(text, 'dict'),     // Alternative 2
+                    createGoogleTTSUrl(text, 'android')   // Mobile format
+                ];
 
-                audio.oncanplaythrough = function() {
-                    audio.play()
-                        .then(() => resolve())
-                        .catch(error => reject(error));
-                };
-
-                audio.onerror = function(error) {
-                    reject(error);
-                };
-
-                audio.load();
+                tryUrls(urls, 0, resolve, reject);
             });
         }
 
-        // Create Google TTS URL
-        function createGoogleTTSUrl(text) {
+        // Try multiple URLs until one works
+        function tryUrls(urls, index, resolve, reject) {
+            if (index >= urls.length) {
+                reject(new Error('Alle Google TTS URLs gefaald'));
+                return;
+            }
+
+            const audio = new Audio();
+            const currentUrl = urls[index];
+
+            console.log(`Trying URL ${index + 1}:`, currentUrl);
+
+            // Set up success handler
+            audio.oncanplaythrough = function() {
+                console.log(`✅ URL ${index + 1} works!`);
+                audio.play()
+                    .then(() => {
+                        // Store working URL format for future use
+                        window.workingGoogleTTSFormat = getFormatFromIndex(index);
+                        resolve();
+                    })
+                    .catch(error => {
+                        console.log(`URL ${index + 1} loads but can't play:`, error);
+                        tryUrls(urls, index + 1, resolve, reject);
+                    });
+            };
+
+            // Set up error handler
+            audio.onerror = function(error) {
+                console.log(`❌ URL ${index + 1} failed:`, error);
+                tryUrls(urls, index + 1, resolve, reject);
+            };
+
+            // Try to load the audio
+            audio.src = currentUrl;
+            audio.load();
+        }
+
+        // Get format name from index
+        function getFormatFromIndex(index) {
+            const formats = ['gtx', 'webapp', 'tw-ob', 'dict', 'android'];
+            return formats[index] || 'gtx';
+        }
+
+        // Create Google TTS URL with different client formats
+        function createGoogleTTSUrl(text, client = 'gtx') {
+            const encodedText = encodeURIComponent(text);
             const baseUrl = 'https://translate.google.com/translate_tts';
+
+            // Different client parameters that may bypass CORS differently
+            const clientParams = {
+                'gtx': 'gtx',
+                'webapp': 'webapp',
+                'tw-ob': 'tw-ob',
+                'dict': 'dict-chrome-ex',
+                'android': 'android'
+            };
+
             const params = new URLSearchParams({
                 ie: 'UTF-8',
-                q: text,
+                q: encodedText,
                 tl: 'nl',
-                client: 'tw-ob',
+                client: clientParams[client] || 'gtx',
                 idx: '0',
                 total: '1',
                 textlen: text.length.toString()
@@ -389,20 +440,73 @@
             return `${baseUrl}?${params.toString()}`;
         }
 
-        // Debug function
+        // Enhanced debug function
         function debugAudio() {
             const debugDiv = document.getElementById('debug-info');
             debugDiv.style.display = 'block';
-            debugDiv.innerHTML = '<strong>🔍 Audio Info:</strong><br><br>';
+            debugDiv.innerHTML = '<strong>🔍 Google TTS Debug Info:</strong><br><br>';
 
-            debugDiv.innerHTML += `<strong>Google Cloud TTS:</strong> Actief<br>`;
-            debugDiv.innerHTML += `<strong>Taal:</strong> Nederlands (nl)<br>`;
-            debugDiv.innerHTML += `<strong>Status:</strong> ${audioInitialized ? 'Geïnitialiseerd' : 'Niet geïnitialiseerd'}<br><br>`;
+            // Device info
+            debugDiv.innerHTML += `<strong>Browser:</strong> ${navigator.userAgent.substring(0, 80)}...<br><br>`;
 
-            debugDiv.innerHTML += '<button onclick="testGoogleTTS(\'Dit is een test in het Nederlands\')" style="padding: 5px 10px; margin: 5px;">🎵 Test Google TTS</button>';
+            // Working format info
+            if (window.workingGoogleTTSFormat) {
+                debugDiv.innerHTML += `<strong>Werkende URL format:</strong> ${window.workingGoogleTTSFormat}<br><br>`;
+            }
+
+            // Test all URL formats
+            debugDiv.innerHTML += `<strong>Google TTS URL Formats:</strong><br>`;
+            const testText = 'Test';
+            const formats = ['gtx', 'webapp', 'tw-ob', 'dict', 'android'];
+
+            formats.forEach((format, index) => {
+                const url = createGoogleTTSUrl(testText, format);
+                debugDiv.innerHTML += `${index + 1}. ${format}: <a href="${url}" target="_blank" style="font-size: 0.8em; color: #666;">Test Link</a><br>`;
+            });
+
+            debugDiv.innerHTML += '<br><button onclick="testAllGoogleUrls()" style="padding: 5px 10px; margin: 5px;">🎵 Test Alle Formats</button>';
+            debugDiv.innerHTML += '<button onclick="testGoogleTTSManual()" style="padding: 5px 10px; margin: 5px;">🔊 Test Google TTS</button>';
+
+            // Current status
+            debugDiv.innerHTML += `<br><br><strong>Status:</strong> ${audioInitialized ? 'Geïnitialiseerd ✅' : 'Niet geïnitialiseerd ❌'}<br>`;
         }
 
-        // Play sound using Google Cloud TTS
+        // Manual test functions
+        function testAllGoogleUrls() {
+            const testText = 'Dit is een test in het Nederlands';
+            const formats = ['gtx', 'webapp', 'tw-ob', 'dict', 'android'];
+
+            console.log('🔍 Testing all Google TTS URL formats...');
+
+            formats.forEach((format, index) => {
+                const url = createGoogleTTSUrl(testText, format);
+                console.log(`${index + 1}. ${format}:`, url);
+
+                const audio = new Audio();
+
+                audio.oncanplaythrough = function() {
+                    console.log(`✅ Format ${format} works!`);
+                    if (index === 0) { // Only play the first working one
+                        audio.play().catch(console.error);
+                    }
+                };
+
+                audio.onerror = function(error) {
+                    console.log(`❌ Format ${format} failed:`, error);
+                };
+
+                audio.src = url;
+                audio.load();
+            });
+        }
+
+        function testGoogleTTSManual() {
+            testGoogleTTS('Dit is een test in het Nederlands')
+                .then(() => console.log('✅ Google TTS manual test succeeded'))
+                .catch(error => console.log('❌ Google TTS manual test failed:', error));
+        }
+
+        // Play sound using Google TTS with format preference
         function playSound(text) {
             if (!audioInitialized) {
                 console.log('Audio not initialized, skipping sound:', text);
@@ -410,15 +514,64 @@
             }
 
             try {
-                const audioUrl = createGoogleTTSUrl(text);
-                const audio = new Audio(audioUrl);
+                // Use working format if known, otherwise try all formats
+                const preferredFormat = window.workingGoogleTTSFormat || 'gtx';
+                const audio = new Audio();
 
-                audio.play().catch(error => {
-                    console.error('Error playing audio:', error);
-                });
+                const tryPlayWithFormat = (format) => {
+                    const url = createGoogleTTSUrl(text, format);
+                    audio.src = url;
+
+                    audio.oncanplaythrough = function() {
+                        audio.play().catch(error => {
+                            console.log(`Play failed with ${format}, trying fallback:`, error);
+                            tryAllFormatsForPlay(text);
+                        });
+                    };
+
+                    audio.onerror = function(error) {
+                        console.log(`Format ${format} failed, trying fallback:`, error);
+                        tryAllFormatsForPlay(text);
+                    };
+
+                    audio.load();
+                };
+
+                tryPlayWithFormat(preferredFormat);
             } catch (error) {
-                console.error('Error creating audio:', error);
+                console.error('Error playing sound:', error);
             }
+        }
+
+        // Fallback function to try all formats for playing
+        function tryAllFormatsForPlay(text) {
+            const formats = ['gtx', 'webapp', 'tw-ob', 'dict', 'android'];
+
+            const tryFormat = (index) => {
+                if (index >= formats.length) {
+                    console.error('All formats failed for:', text);
+                    return;
+                }
+
+                const audio = new Audio();
+                const url = createGoogleTTSUrl(text, formats[index]);
+
+                audio.oncanplaythrough = function() {
+                    audio.play().catch(error => {
+                        console.log(`Format ${formats[index]} failed to play, trying next:`, error);
+                        tryFormat(index + 1);
+                    });
+                };
+
+                audio.onerror = function() {
+                    tryFormat(index + 1);
+                };
+
+                audio.src = url;
+                audio.load();
+            };
+
+            tryFormat(0);
         }
 
         // Data
