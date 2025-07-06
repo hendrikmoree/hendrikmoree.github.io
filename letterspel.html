@@ -302,6 +302,7 @@
         <div id="word-game" class="game-area word-game">
             <h2>Maak het woord!</h2>
             <div class="word-display" id="word-display">🐱</div>
+            <button class="letter-sound" onclick="spellWordLetterByLetter()">🔤 Spel het woord</button>
             <div class="word-input" id="word-input"></div>
             <div class="letter-options" id="word-options"></div>
             <div class="score" id="word-score">Score: 0</div>
@@ -733,6 +734,32 @@
 
         function playLetterSound() {
             playSound(letterSounds[currentLetter]);
+        }
+
+        function spellWordLetterByLetter() {
+            if (!currentWord) return;
+
+            const letters = currentWord.word.split('');
+            let currentIndex = 0;
+
+            function playNextLetter() {
+                if (currentIndex < letters.length) {
+                    const letter = letters[currentIndex];
+                    const sound = letterSounds[letter] || letter;
+                    playSound(sound);
+                    currentIndex++;
+
+                    // Wacht 1 seconde voor de volgende letter
+                    setTimeout(playNextLetter, 1000);
+                } else {
+                    // Na alle letters, zeg het hele woord
+                    setTimeout(() => {
+                        playSound(currentWord.sound);
+                    }, 500);
+                }
+            }
+
+            playNextLetter();
         }
 
         // Word game
